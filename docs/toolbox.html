@@ -1,0 +1,63 @@
+<html>
+    <head>
+        <title>Foenix Toolbox User's Manual</title>
+        <style>
+table { border-spacing: 0;}
+table, th, td {
+  border: 1px solid black;
+}
+th { font-family:Arial, Helvetica, sans-serif; font-weight: bold; font-size: 10pt; }
+td { font-family:Arial, Helvetica, sans-serif; font-weight: normal; font-size: 10pt; }
+td dl dt { font-family:Arial, Helvetica, sans-serif; font-weight: bold; font-size: 10pt; }
+code { font-family: 'Courier New', Courier, monospace; font-size: 10pt; }
+pre { font-family: 'Courier New', Courier, monospace; font-size: 10pt; }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr >
+                <th>Name</th>
+                <td><code>sys_proc_exit</code></td>
+            </tr>  
+            
+            <tr>
+                <th>Address</th>
+                <td><code>0xffe000</code></td>
+            </tr>
+
+            <tr>
+                <th>Purpose</th>
+                <td>
+                    This function ends the execution of the current program and returns control to the Toolbox.
+                    The program can return a result code to the Toolbox, although this is not currently used.
+                </td>
+            </tr>
+            
+            <tr>
+                <th>Prototype</th>
+                <td><code>void sys_proc_exit(short result)</code></td>
+            </tr>
+
+            <tr>
+                <th>Parameters</th>
+                <td>
+                    <ul>
+                        <li><code>result</code> : the result code that should be returned to the caller</li>
+                    </ul>
+                </td>
+            </tr>
+
+            <tr>
+                <th>C</th>
+                <td><code>sys_proc_exit(0)     // Quit the program with a result code of 0</code></td>
+            </tr>
+
+            <tr>
+                <th>Assembly</th>
+                <td><pre>
+lda #0              ; Set the result code to 0
+jsl sys_proc_exit   ; Quit the program</pre></td>
+           </tr>
+        </table>
+    </body>
+</html>

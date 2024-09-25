@@ -1,0 +1,58 @@
+\section{Interrupt Functions}
+
+\subsection*{\texttt{sys\_int\_enable\_all}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_enable_all()! \\ \hline
+Address & \texttt{0xFFE004} \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_disable\_all}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_disable_all()! \\ \hline
+Address & \texttt{0xFFE008} \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_disable}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_disable(unsigned short n)! \\ \hline
+Address & \texttt{0xFFE00C} \\ \hline
+\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_enable}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_enable(unsigned short n)! \\ \hline
+Address & \texttt{0xFFE010} \\ \hline
+\lstinline!n! & the number of the interrupt \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_register}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!p_int_handler sys_int_register(unsigned short n, p_int_handler handler)! \\ \hline
+Address & \texttt{0xFFE014} \\ \hline
+\lstinline!n! & the number of the interrupt \\ \hline
+\lstinline!handler! & pointer to the interrupt handler to register \\ \hline
+Returns & the pointer to the previous interrupt handler \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_pending}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_int_pending(unsigned short n)! \\ \hline
+Address & \texttt{0xFFE018} \\ \hline
+\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+Returns & non-zero if interrupt n is pending, 0 if not \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_get\_info}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_get_info(p_sys_info info)! \\ \hline
+Address & \texttt{0xFFE01C} \\ \hline
+\lstinline!info! & pointer to a s\_sys\_info structure to fill out \\ \hline
+\end{tabular}
+
+\subsection*{\texttt{sys\_int\_clear}}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_clear(unsigned short n)! \\ \hline
+Address & \texttt{0xFFE020} \\ \hline
+\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+\end{tabular}
