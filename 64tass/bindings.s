@@ -276,7 +276,7 @@ sys_chan_device = $ffe054
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_text_setsizes = $000000
+sys_text_setsizes = $ffe0E4
 
 
 ;

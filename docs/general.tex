@@ -1,77 +1,81 @@
 \section{General Functions}
 
-\subsection*{\texttt{sys\_proc\_exit}}
-\begin{tabular}{|l||l|} \hline
-Prototype & \lstinline!void sys_proc_exit(short result)! \\ \hline
-Address & \texttt{0xFFE000} \\ \hline
-\lstinline!result! & the code to return to the kernel \\ \hline
+\subsection*{sys\_proc\_exit -- 0xFFE000}
+This function ends the currently running program and returns control to the command line. It takes a single short argument, which is the result code that should be passed back to the kernel. This function does not return.
+
+
+\begin{tabular}{|l|l|} \hline
+\multicolumn{2}{|l|}{\lstinline!void sys_proc_exit(short result)!} \\ \hline\hline
+result    & the code to return to the kernel \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_proc\_run}}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+sys_proc_exit(0);     // Quit the program with a result code of 0
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	lda #0                ; Return code of 0
+	jsl sys_proc_exit     ; Quit the program
+\end{verbatim}
+
+\subsection*{sys\_proc\_run -- 0xFFE0D8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_proc_run(const char * path, int argc, char * argv[])! \\ \hline
-Address & \texttt{0xFFE0D8} \\ \hline
-\lstinline!path! & the path to the executable file \\ \hline
-\lstinline!argc! & the number of arguments passed \\ \hline
-\lstinline!argv! & the array of string arguments \\ \hline
+path & the path to the executable file \\ \hline
+argc & the number of arguments passed \\ \hline
+argv & the array of string arguments \\ \hline
 Returns & the return result of the program \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_text\_setsizes}}
+\subsection*{sys\_get\_info -- 0xFFE01C}
 \begin{tabular}{|l||l|} \hline
-Prototype & \lstinline!void sys_text_setsizes(short chan)! \\ \hline
-Address & \texttt{0x000000} \\ \hline
-\lstinline!chan! &  \\ \hline
+Prototype & \lstinline!void sys_get_info(p_sys_info info)! \\ \hline
+info & pointer to a s\_sys\_info structure to fill out \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_mem\_get\_ramtop}}
+\subsection*{sys\_mem\_get\_ramtop -- 0xFFE0B8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!uint32_t sys_mem_get_ramtop()! \\ \hline
-Address & \texttt{0xFFE0B8} \\ \hline
 Returns & the address of the first byte of reserved system RAM (one above the last byte the user program can use) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_mem\_reserve}}
+\subsection*{sys\_mem\_reserve -- 0xFFE0BC}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!uint32_t sys_mem_reserve(uint32_t bytes)! \\ \hline
-Address & \texttt{0xFFE0BC} \\ \hline
-\lstinline!bytes! & the number of bytes to reserve \\ \hline
+bytes & the number of bytes to reserve \\ \hline
 Returns & address of the first byte of the reserved block \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_time\_jiffies}}
+\subsection*{sys\_time\_jiffies -- 0xFFE0C0}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!uint32_t sys_time_jiffies()! \\ \hline
-Address & \texttt{0xFFE0C0} \\ \hline
 Returns & the number of jiffies since the last reset \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_rtc\_set\_time}}
+\subsection*{sys\_rtc\_set\_time -- 0xFFE0C4}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_rtc_set_time(p_time time)! \\ \hline
-Address & \texttt{0xFFE0C4} \\ \hline
-\lstinline!time! & pointer to a t\_time record containing the correct time \\ \hline
+time & pointer to a t\_time record containing the correct time \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_rtc\_get\_time}}
+\subsection*{sys\_rtc\_get\_time -- 0xFFE0C8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_rtc_get_time(p_time time)! \\ \hline
-Address & \texttt{0xFFE0C8} \\ \hline
-\lstinline!time! & pointer to a t\_time record in which to put the current time \\ \hline
+time & pointer to a t\_time record in which to put the current time \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_kbd\_scancode}}
+\subsection*{sys\_kbd\_scancode -- 0xFFE0CC}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!uint16_t sys_kbd_scancode()! \\ \hline
-Address & \texttt{0xFFE0CC} \\ \hline
 Returns & the next scan code from the keyboard... 0 if nothing pending \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_kbd\_layout}}
+\subsection*{sys\_kbd\_layout -- 0xFFE0D4}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_kbd_layout(const char * tables)! \\ \hline
-Address & \texttt{0xFFE0D4} \\ \hline
-\lstinline!tables! & pointer to the keyboard translation tables \\ \hline
+tables & pointer to the keyboard translation tables \\ \hline
 Returns & 0 on success, negative number on error \\ \hline
 \end{tabular}
-

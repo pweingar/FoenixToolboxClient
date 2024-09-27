@@ -221,14 +221,6 @@ extern SYSTEMCALL short sys_chan_swap(short channel1, short channel2);
  */
 extern SYSTEMCALL short sys_chan_device(short channel);
 
-/**
- * Compute the size information for the text screen based on the current settings in VICKY
- * These settings are needed to correctly position text on the screen.
- *
- * @param screen the screen number 0 for channel A, 1 for channel B
- */
-extern SYSTEMCALL void sys_text_setsizes(short chan);
-
 /***
  *** Block device system calls
  ***/
@@ -665,6 +657,14 @@ extern SYSTEMCALL void sys_txt_set_cursor_visible(short screen, short is_visible
  * @param data pointer to the raw font data to be loaded
  */
 extern SYSTEMCALL short sys_txt_set_font(short screen, short width, short height, unsigned char * data);
+
+/**
+ * Compute the size information for the text screen based on the current settings in VICKY
+ * These settings are needed to correctly position text on the screen.
+ *
+ * @param screen the screen number 0 for channel A, 1 for channel B
+ */
+extern SYSTEMCALL void sys_txt_setsizes(short chan);
 
 /**
  * Get the display resolutions

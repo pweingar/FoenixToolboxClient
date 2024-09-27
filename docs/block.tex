@@ -1,58 +1,52 @@
 \section{Block Device Functions}
 
-\subsection*{\texttt{sys\_bdev\_register}}
+\subsection*{sys\_bdev\_register -- 0xFFE05C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_register(p_dev_block device)! \\ \hline
-Address & \texttt{0xFFE05C} \\ \hline
-\lstinline!device! & pointer to the description of the device to register \\ \hline
+device & pointer to the description of the device to register \\ \hline
 Returns & 0 on succes, negative number on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_bdev\_read}}
+\subsection*{sys\_bdev\_read -- 0xFFE060}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_read(short dev, long lba, uint8_t * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE060} \\ \hline
-\lstinline!dev! & the number of the device \\ \hline
-\lstinline!lba! & the logical block address of the block to read \\ \hline
-\lstinline!buffer! & the buffer into which to copy the block data \\ \hline
-\lstinline!size! & the size of the buffer. \\ \hline
+dev & the number of the device \\ \hline
+lba & the logical block address of the block to read \\ \hline
+buffer & the buffer into which to copy the block data \\ \hline
+size & the size of the buffer. \\ \hline
 Returns & number of bytes read, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_bdev\_write}}
+\subsection*{sys\_bdev\_write -- 0xFFE064}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_write(short dev, long lba, const uint8_t * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE064} \\ \hline
-\lstinline!dev! & the number of the device \\ \hline
-\lstinline!lba! & the logical block address of the block to write \\ \hline
-\lstinline!buffer! & the buffer containing the data to write \\ \hline
-\lstinline!size! & the size of the buffer. \\ \hline
+dev & the number of the device \\ \hline
+lba & the logical block address of the block to write \\ \hline
+buffer & the buffer containing the data to write \\ \hline
+size & the size of the buffer. \\ \hline
 Returns & number of bytes written, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_bdev\_status}}
+\subsection*{sys\_bdev\_status -- 0xFFE068}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_status(short dev)! \\ \hline
-Address & \texttt{0xFFE068} \\ \hline
-\lstinline!dev! & the number of the device \\ \hline
+dev & the number of the device \\ \hline
 Returns & the status of the device \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_bdev\_flush}}
+\subsection*{sys\_bdev\_flush -- 0xFFE06C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_flush(short dev)! \\ \hline
-Address & \texttt{0xFFE06C} \\ \hline
-\lstinline!dev! & the number of the device \\ \hline
+dev & the number of the device \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_bdev\_ioctrl}}
+\subsection*{sys\_bdev\_ioctrl -- 0xFFE070}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_ioctrl(short dev, short command, uint8_t * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE070} \\ \hline
-\lstinline!dev! & the number of the device \\ \hline
-\lstinline!command! & the number of the command to send \\ \hline
-\lstinline!buffer! & pointer to bytes of additional data for the command \\ \hline
-\lstinline!size! & the size of the buffer \\ \hline
+dev & the number of the device \\ \hline
+command & the number of the command to send \\ \hline
+buffer & pointer to bytes of additional data for the command \\ \hline
+size & the size of the buffer \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}

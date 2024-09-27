@@ -1,120 +1,108 @@
 \section{Channel Functions}
 
-\subsection*{\texttt{sys\_chan\_read\_b}}
+\subsection*{sys\_chan\_read\_b -- 0xFFE024}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_read_b(short channel)! \\ \hline
-Address & \texttt{0xFFE024} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
+channel & the number of the channel \\ \hline
 Returns & the value read (if negative, error) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_read}}
+\subsection*{sys\_chan\_read -- 0xFFE028}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_read(short channel, unsigned char * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE028} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!buffer! & the buffer into which to copy the channel data \\ \hline
-\lstinline!size! & the size of the buffer. \\ \hline
+channel & the number of the channel \\ \hline
+buffer & the buffer into which to copy the channel data \\ \hline
+size & the size of the buffer. \\ \hline
 Returns & number of bytes read, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_readline}}
+\subsection*{sys\_chan\_readline -- 0xFFE02C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_readline(short channel, unsigned char * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE02C} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!buffer! & the buffer into which to copy the channel data \\ \hline
-\lstinline!size! & the size of the buffer \\ \hline
+channel & the number of the channel \\ \hline
+buffer & the buffer into which to copy the channel data \\ \hline
+size & the size of the buffer \\ \hline
 Returns & number of bytes read, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_write\_b}}
+\subsection*{sys\_chan\_write\_b -- 0xFFE030}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_write_b(short channel, uint8_t b)! \\ \hline
-Address & \texttt{0xFFE030} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!b! & the byte to write \\ \hline
+channel & the number of the channel \\ \hline
+b & the byte to write \\ \hline
 Returns & 0 on success, a negative value on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_write}}
+\subsection*{sys\_chan\_write -- 0xFFE034}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_write(short channel, const uint8_t * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE034} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!buffer! &  \\ \hline
-\lstinline!size! &  \\ \hline
+channel & the number of the channel \\ \hline
+buffer &  \\ \hline
+size &  \\ \hline
 Returns & number of bytes written, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_status}}
+\subsection*{sys\_chan\_status -- 0xFFE038}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_status(short channel)! \\ \hline
-Address & \texttt{0xFFE038} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
+channel & the number of the channel \\ \hline
 Returns & the status of the device \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_flush}}
+\subsection*{sys\_chan\_flush -- 0xFFE03C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_flush(short channel)! \\ \hline
-Address & \texttt{0xFFE03C} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
+channel & the number of the channel \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_seek}}
+\subsection*{sys\_chan\_seek -- 0xFFE040}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_seek(short channel, long position, short base)! \\ \hline
-Address & \texttt{0xFFE040} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!position! & the position of the cursor \\ \hline
-\lstinline!base! & whether the position is absolute or relative to the current position \\ \hline
+channel & the number of the channel \\ \hline
+position & the position of the cursor \\ \hline
+base & whether the position is absolute or relative to the current position \\ \hline
 Returns & 0 = success, a negative number is an error. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_ioctrl}}
+\subsection*{sys\_chan\_ioctrl -- 0xFFE044}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_ioctrl(short channel, short command, uint8_t * buffer, short size)! \\ \hline
-Address & \texttt{0xFFE044} \\ \hline
-\lstinline!channel! & the number of the channel \\ \hline
-\lstinline!command! & the number of the command to send \\ \hline
-\lstinline!buffer! & pointer to bytes of additional data for the command \\ \hline
-\lstinline!size! & the size of the buffer \\ \hline
+channel & the number of the channel \\ \hline
+command & the number of the command to send \\ \hline
+buffer & pointer to bytes of additional data for the command \\ \hline
+size & the size of the buffer \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_open}}
+\subsection*{sys\_chan\_open -- 0xFFE048}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_open(short dev, const char * path, short mode)! \\ \hline
-Address & \texttt{0xFFE048} \\ \hline
-\lstinline!dev! & the device number to have a channel opened \\ \hline
-\lstinline!path! & a "path" describing how the device is to be open \\ \hline
-\lstinline!mode! & s the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE) \\ \hline
+dev & the device number to have a channel opened \\ \hline
+path & a "path" describing how the device is to be open \\ \hline
+mode & s the device to be read, written, both? (0x01 = READ flag, 0x02 = WRITE flag, 0x03 = READ and WRITE) \\ \hline
 Returns & the number of the channel opened, negative number on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_close}}
+\subsection*{sys\_chan\_close -- 0xFFE04C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_close(short chan)! \\ \hline
-Address & \texttt{0xFFE04C} \\ \hline
-\lstinline!chan! & the number of the channel to close \\ \hline
+chan & the number of the channel to close \\ \hline
 Returns & nothing useful \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_swap}}
+\subsection*{sys\_chan\_swap -- 0xFFE050}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_swap(short channel1, short channel2)! \\ \hline
-Address & \texttt{0xFFE050} \\ \hline
-\lstinline!channel1! & the ID of one of the channels \\ \hline
-\lstinline!channel2! & the ID of the other channel \\ \hline
+channel1 & the ID of one of the channels \\ \hline
+channel2 & the ID of the other channel \\ \hline
 Returns & 0 on success, any other number is an error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_chan\_device}}
+\subsection*{sys\_chan\_device -- 0xFFE054}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_device(short channel)! \\ \hline
-Address & \texttt{0xFFE054} \\ \hline
-\lstinline!channel! & the ID of the channel to query \\ \hline
+channel & the ID of the channel to query \\ \hline
 Returns & the ID of the device associated with the channel, negative number for error \\ \hline
 \end{tabular}
+

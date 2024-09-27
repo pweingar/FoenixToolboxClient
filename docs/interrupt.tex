@@ -1,58 +1,191 @@
 \section{Interrupt Functions}
 
-\subsection*{\texttt{sys\_int\_enable\_all}}
+\subsection*{sys\_int\_enable\_all -- 0xFFE004}
+This function enables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_int_enable_all()! \\ \hline
-Address & \texttt{0xFFE004} \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_int\_disable\_all}}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Enable processing of IRQs
+sys_int_enable_all();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Enable processing of IRQs
+jrl sys_int_enable_all
+\end{verbatim}
+
+\subsection*{sys\_int\_disable\_all -- 0xFFE008}
+This function disables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_int_disable_all()! \\ \hline
-Address & \texttt{0xFFE008} \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_int\_disable}}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Disable processing of IRQs
+sys_int_disable_all();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Disable processing of IRQs
+jrl sys_int_disable_all
+\end{verbatim}
+
+\subsection*{sys\_int\_disable -- 0xFFE00C}
+This function disables a particular interrupt at the level of the interrupt controller. The argument passed is the number of the interrupt to disable.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_int_disable(unsigned short n)! \\ \hline
-Address & \texttt{0xFFE00C} \\ \hline
-\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_int\_enable}}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Disable the start-of-frame interrupt
+sys_int_disable(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    lda #INT_SOF_A        ; Enable the start-of-frame interrupt
+    jsl sys_int_disable
+\end{verbatim}
+
+\subsection*{sys\_int\_enable -- 0xFFE010}
+This function enables a particular interrupt at the level of the interrupt controller. The argument passed is the number of the interrupt to enable. Note that interrupts that are enabled at this level will still be disabled, if interrupts are disabled globally by \verb+sys_int_disable_all+.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_int_enable(unsigned short n)! \\ \hline
-Address & \texttt{0xFFE010} \\ \hline
-\lstinline!n! & the number of the interrupt \\ \hline
+n & the number of the interrupt \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_int\_register}}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Enable the start-of-frame interrupt
+sys_int_enable(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    lda #INT_SOF_A        ; Enable the start-of-frame interrupt
+    jsl sys_int_enable
+\end{verbatim}
+
+\subsection*{sys\_int\_register -- 0xFFE014}
+Registers a function as an interrupt handler. An interrupt handler is a function which takes and returns no arguments and will be run in at an elevated privilege level during the interrupt handling cycle.
+
+The first argument is the number of the interrupt to handle, the second argument is a pointer to the interrupt handler to register. Registering a null pointer as an interrupt handler will “deregister” the old handler.
+
+The function returns the handler that was previously registered.
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!p_int_handler sys_int_register(unsigned short n, p_int_handler handler)! \\ \hline
-Address & \texttt{0xFFE014} \\ \hline
-\lstinline!n! & the number of the interrupt \\ \hline
-\lstinline!handler! & pointer to the interrupt handler to register \\ \hline
+n & the number of the interrupt \\ \hline
+handler & pointer to the interrupt handler to register \\ \hline
 Returns & the pointer to the previous interrupt handler \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_int\_pending}}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Handler for the start-of-frame interrupt
+// Must be a far sub-routine (returns through RTL)
+__attribute__((far)) void sof_handler() {
+	// Interrupt handler code here...
+}
+
+// Register a handler for the start-of-frame interrupt
+p_int_handler old = sys_int_register(INT_SOF_A, sof_handler);
+\end{lstlisting}
+
+\subsubsection*{Example: Assember}
+\begin{verbatim}
+; Handler for the start-of-frame interrupt
+; Must be a far sub-routine (returns through RTL)
+sof_handler:
+    ; Handler code here...
+    rtl
+
+    ; Code to register the handler...
+    pei #`sof_handler       ; push pointer to sof_handler
+    pei #<>sof_handler
+
+    lda #INT_SOF_A          ; A = the number for the SOF_A interrupt
+	
+    jsl sys_int_register
+
+    sta old                 ; Save the pointer to the old handler
+    stx old+2
+\end{verbatim}
+
+\subsection*{sys\_int\_pending -- 0xFFE018}
+Query an interrupt to see if it is pending in the interrupt controller.
+NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_int_pending(unsigned short n)! \\ \hline
-Address & \texttt{0xFFE018} \\ \hline
-\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
 Returns & non-zero if interrupt n is pending, 0 if not \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_get\_info}}
-\begin{tabular}{|l||l|} \hline
-Prototype & \lstinline!void sys_get_info(p_sys_info info)! \\ \hline
-Address & \texttt{0xFFE01C} \\ \hline
-\lstinline!info! & pointer to a s\_sys\_info structure to fill out \\ \hline
-\end{tabular}
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Check to see if start-of-frame interrupt is pending
+short is_pending = sys_int_pending(INT_SOF_A);
+if (is_pending) {
+	// The interrupt has not yet been acknowledged
+}
+\end{lstlisting}
 
-\subsection*{\texttt{sys\_int\_clear}}
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Check to see if the start-of-frame interrupt is pending
+    lda #INT_SOF_A
+    jsl sys_int_pending
+    cmp #0
+    beq sof_not_pending
+
+    ; Code for when start-of-frame is pending
+
+sof_not_pending:
+\end{verbatim}
+
+\subsection*{sys\_int\_clear -- 0xFFE020}
+This function acknowledges the processing of an interrupt by clearing its pending flag in the interrupt controller.
+NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_int_clear(unsigned short n)! \\ \hline
-Address & \texttt{0xFFE020} \\ \hline
-\lstinline!n! & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
 \end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Acknowledge the processing of the start-of-frame interrupt
+sys_int_clear(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Acknowledge the processing of the start-of-frame interrupt
+    lda #INT_SOF_A
+    jsl sys_int_clear
+\end{verbatim}

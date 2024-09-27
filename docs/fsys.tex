@@ -1,150 +1,133 @@
 \section{File System Functions}
 
-\subsection*{\texttt{sys\_fsys\_open}}
+\subsection*{sys\_fsys\_open -- 0xFFE074}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_open(const char * path, short mode)! \\ \hline
-Address & \texttt{0xFFE074} \\ \hline
-\lstinline!path! & the ASCIIZ string containing the path to the file. \\ \hline
-\lstinline!mode! & the mode (e.g. r/w/create) \\ \hline
+path & the ASCIIZ string containing the path to the file. \\ \hline
+mode & the mode (e.g. r/w/create) \\ \hline
 Returns & the channel ID for the open file (negative if error) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_close}}
+\subsection*{sys\_fsys\_close -- 0xFFE078}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_close(short fd)! \\ \hline
-Address & \texttt{0xFFE078} \\ \hline
-\lstinline!fd! & the channel ID for the file \\ \hline
+fd & the channel ID for the file \\ \hline
 Returns & 0 on success, negative number on failure \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_opendir}}
+\subsection*{sys\_fsys\_opendir -- 0xFFE07C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_opendir(const char * path)! \\ \hline
-Address & \texttt{0xFFE07C} \\ \hline
-\lstinline!path! & the path to the directory to open \\ \hline
+path & the path to the directory to open \\ \hline
 Returns & the handle to the directory if >= 0. An error if < 0 \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_closedir}}
+\subsection*{sys\_fsys\_closedir -- 0xFFE080}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_closedir(short dir)! \\ \hline
-Address & \texttt{0xFFE080} \\ \hline
-\lstinline!dir! & the directory handle to close \\ \hline
+dir & the directory handle to close \\ \hline
 Returns & 0 on success, negative number on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_readdir}}
+\subsection*{sys\_fsys\_readdir -- 0xFFE084}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_readdir(short dir, p_file_info file)! \\ \hline
-Address & \texttt{0xFFE084} \\ \hline
-\lstinline!dir! & the handle of the open directory \\ \hline
-\lstinline!file! & pointer to the t\_file\_info structure to fill out. \\ \hline
+dir & the handle of the open directory \\ \hline
+file & pointer to the t\_file\_info structure to fill out. \\ \hline
 Returns & 0 on success, negative number on failure \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_findfirst}}
+\subsection*{sys\_fsys\_findfirst -- 0xFFE088}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_findfirst(const char * path, const char * pattern, p_file_info file)! \\ \hline
-Address & \texttt{0xFFE088} \\ \hline
-\lstinline!path! & the path to the directory to search \\ \hline
-\lstinline!pattern! & the file name pattern to search for \\ \hline
-\lstinline!file! & pointer to the t\_file\_info structure to fill out \\ \hline
+path & the path to the directory to search \\ \hline
+pattern & the file name pattern to search for \\ \hline
+file & pointer to the t\_file\_info structure to fill out \\ \hline
 Returns & the directory handle to use for subsequent calls if >= 0, error if negative \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_findnext}}
+\subsection*{sys\_fsys\_findnext -- 0xFFE08C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_findnext(short dir, p_file_info file)! \\ \hline
-Address & \texttt{0xFFE08C} \\ \hline
-\lstinline!dir! & the handle to the directory (returned by fsys\_findfirst) to search \\ \hline
-\lstinline!file! & pointer to the t\_file\_info structure to fill out \\ \hline
+dir & the handle to the directory (returned by fsys\_findfirst) to search \\ \hline
+file & pointer to the t\_file\_info structure to fill out \\ \hline
 Returns & 0 on success, error if negative \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_get\_label}}
+\subsection*{sys\_fsys\_get\_label -- 0xFFE090}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_get_label(const char * path, char * label)! \\ \hline
-Address & \texttt{0xFFE090} \\ \hline
-\lstinline!path! & path to the drive \\ \hline
-\lstinline!label! & buffer that will hold the label... should be at least 35 bytes \\ \hline
+path & path to the drive \\ \hline
+label & buffer that will hold the label... should be at least 35 bytes \\ \hline
 Returns & 0 on success, error if negative \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_set\_label}}
+\subsection*{sys\_fsys\_set\_label -- 0xFFE094}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_set_label(short drive, const char * label)! \\ \hline
-Address & \texttt{0xFFE094} \\ \hline
-\lstinline!drive! & drive number \\ \hline
-\lstinline!label! & buffer that holds the label \\ \hline
+drive & drive number \\ \hline
+label & buffer that holds the label \\ \hline
 Returns & 0 on success, error if negative \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_mkdir}}
+\subsection*{sys\_fsys\_mkdir -- 0xFFE098}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_mkdir(const char * path)! \\ \hline
-Address & \texttt{0xFFE098} \\ \hline
-\lstinline!path! & the path of the directory to create. \\ \hline
+path & the path of the directory to create. \\ \hline
 Returns & 0 on success, negative number on failure. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_delete}}
+\subsection*{sys\_fsys\_delete -- 0xFFE09C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_delete(const char * path)! \\ \hline
-Address & \texttt{0xFFE09C} \\ \hline
-\lstinline!path! & the path of the file or directory to delete. \\ \hline
+path & the path of the file or directory to delete. \\ \hline
 Returns & 0 on success, negative number on failure. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_rename}}
+\subsection*{sys\_fsys\_rename -- 0xFFE0A0}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_rename(const char * old_path, const char * new_path)! \\ \hline
-Address & \texttt{0xFFE0A0} \\ \hline
-\lstinline!old_path! & he current path to the file \\ \hline
-\lstinline!new_path! & the new path for the file \\ \hline
+old\_path & he current path to the file \\ \hline
+new\_path & the new path for the file \\ \hline
 Returns & 0 on success, negative number on failure. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_set\_cwd}}
+\subsection*{sys\_fsys\_set\_cwd -- 0xFFE0A4}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_set_cwd(const char * path)! \\ \hline
-Address & \texttt{0xFFE0A4} \\ \hline
-\lstinline!path! & the path that should be the new current \\ \hline
+path & the path that should be the new current \\ \hline
 Returns & 0 on success, negative number on failure. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_get\_cwd}}
+\subsection*{sys\_fsys\_get\_cwd -- 0xFFE0A8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_get_cwd(char * path, short size)! \\ \hline
-Address & \texttt{0xFFE0A8} \\ \hline
-\lstinline!path! & the buffer in which to store the directory \\ \hline
-\lstinline!size! & the size of the buffer in bytes \\ \hline
+path & the buffer in which to store the directory \\ \hline
+size & the size of the buffer in bytes \\ \hline
 Returns & 0 on success, negative number on failure. \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_load}}
+\subsection*{sys\_fsys\_load -- 0xFFE0AC}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_load(const char * path, uint32_t destination, uint32_t * start)! \\ \hline
-Address & \texttt{0xFFE0AC} \\ \hline
-\lstinline!path! & the path to the file to load \\ \hline
-\lstinline!destination! & the destination address (0 for use file's address) \\ \hline
-\lstinline!start! & pointer to the long variable to fill with the starting address \\ \hline
+path & the path to the file to load \\ \hline
+destination & the destination address (0 for use file's address) \\ \hline
+start & pointer to the long variable to fill with the starting address \\ \hline
 Returns & 0 on success, negative number on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_register\_loader}}
+\subsection*{sys\_fsys\_register\_loader -- 0xFFE0B0}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_register_loader(const char * extension, p_file_loader loader)! \\ \hline
-Address & \texttt{0xFFE0B0} \\ \hline
-\lstinline!extension! & the file extension to map to \\ \hline
-\lstinline!loader! & pointer to the file load routine to add \\ \hline
+extension & the file extension to map to \\ \hline
+loader & pointer to the file load routine to add \\ \hline
 Returns & 0 on success, negative number on error \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_fsys\_stat}}
+\subsection*{sys\_fsys\_stat -- 0xFFE0B4}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_fsys_stat(const char * path, p_file_info file)! \\ \hline
-Address & \texttt{0xFFE0B4} \\ \hline
-\lstinline!path! & the path to the file to check \\ \hline
-\lstinline!file! & pointer to a file info record to fill in, if the file is found. \\ \hline
+path & the path to the file to check \\ \hline
+file & pointer to a file info record to fill in, if the file is found. \\ \hline
 Returns & 0 on success, negative number on error \\ \hline
 \end{tabular}

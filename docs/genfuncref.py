@@ -56,9 +56,10 @@ class FunctionParameter:
 	def emit_latex(self, output):
 		"""Emit the parameter information."""
 
+		name = self.name().replace("_", "\_")
 		description = self.description().replace("_", "\_")
 
-		output.write("\\lstinline!{}! & {} \\\\ \\hline\n".format(self.name(), description))
+		output.write("{0} & {1} \\\\ \\hline\n".format(name, description))
 
 	def emit_asm(self, output):
 		"""Emit the assembly reference for the parameter."""
@@ -180,13 +181,12 @@ class Function:
 		name = self.name().replace("_", "\\_")
 		prototype = self.prototype().replace(" SYSTEMCALL","").replace("extern ", "").replace(";","")
 
-		output.write("\n\\subsection*{{\\texttt{{{}}}}}\n".format(name))
+		output.write("\n\\subsection*{{{0} -- 0x{1:06X}}}\n".format(name, self.address()))
+		output.write("\\begin{table}[!h]")
 		output.write("\\begin{tabular}{|l||l|} \\hline\n")
 		output.write("Prototype & \\lstinline!{}! \\\\ \\hline\n".format(prototype))
-		output.write("Address & \\texttt{{0x{:06X}}} \\\\ \\hline\n".format(self.address()))
 		if self.brief():
 			output.write("Purpose & {} \\\\ \\hline\n".format(self.brief().replace("_", "\_")))
-
 
 		for parameter in self.parameters():
 			parameter.emit_latex(output)
@@ -194,7 +194,9 @@ class Function:
 		if self.return_value():
 			output.write("Returns & {} \\\\ \\hline\n".format(self.return_value().replace("_", "\_")))
 
-		output.write("\\end{tabular}\n")
+		output.write("\\end{tabular}")
+		output.write("\\end{table}")
+		output.write("\n")
 
 	def emit_asm(self, output):
 		"""Emit the assembly reference for the function."""

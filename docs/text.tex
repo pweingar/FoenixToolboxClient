@@ -1,125 +1,117 @@
 \section{Text System Functions}
 
-\subsection*{\texttt{sys\_txt\_set\_mode}}
+\subsection*{sys\_txt\_set\_mode -- 0xFFE0E0}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_txt_set_mode(short screen, short mode)! \\ \hline
-Address & \texttt{0xFFE0E0} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!mode! & a bitfield of desired display mode options \\ \hline
+screen & the number of the text device \\ \hline
+mode & a bitfield of desired display mode options \\ \hline
 Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_xy}}
+\subsection*{sys\_txt\_set\_xy -- 0xFFE0E8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_xy(short screen, short x, short y)! \\ \hline
-Address & \texttt{0xFFE0E8} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!x! & the column for the cursor \\ \hline
-\lstinline!y! & the row for the cursor \\ \hline
+screen & the number of the text device \\ \hline
+x & the column for the cursor \\ \hline
+y & the row for the cursor \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_get\_xy}}
+\subsection*{sys\_txt\_get\_xy -- 0xFFE0EC}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_get_xy(short screen, p_point position)! \\ \hline
-Address & \texttt{0xFFE0EC} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!position! & pointer to a t\_point record to fill out \\ \hline
+screen & the number of the text device \\ \hline
+position & pointer to a t\_point record to fill out \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_get\_region}}
+\subsection*{sys\_txt\_get\_region -- 0xFFE0F0}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_txt_get_region(short screen, p_rect region)! \\ \hline
-Address & \texttt{0xFFE0F0} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!region! & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
+screen & the number of the text device \\ \hline
+region & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
 Returns & 0 on success, any other number means the region was invalid \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_region}}
+\subsection*{sys\_txt\_set\_region -- 0xFFE0F4}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_txt_set_region(short screen, p_rect region)! \\ \hline
-Address & \texttt{0xFFE0F4} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!region! & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
+screen & the number of the text device \\ \hline
+region & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
 Returns & 0 on success, any other number means the region was invalid \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_color}}
+\subsection*{sys\_txt\_set\_color -- 0xFFE0F8}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_color(short screen, unsigned char foreground, unsigned char background)! \\ \hline
-Address & \texttt{0xFFE0F8} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!foreground! & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
-\lstinline!background! & the Text LUT index of the new current background color (0 - 15) \\ \hline
+screen & the number of the text device \\ \hline
+foreground & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
+background & the Text LUT index of the new current background color (0 - 15) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_get\_color}}
+\subsection*{sys\_txt\_get\_color -- 0xFFE0FC}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_get_color(short screen, unsigned char * foreground, unsigned char * background)! \\ \hline
-Address & \texttt{0xFFE0FC} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!foreground! & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
-\lstinline!background! & the Text LUT index of the new current background color (0 - 15) \\ \hline
+screen & the number of the text device \\ \hline
+foreground & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
+background & the Text LUT index of the new current background color (0 - 15) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_cursor\_visible}}
+\subsection*{sys\_txt\_set\_cursor\_visible -- 0xFFE100}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_cursor_visible(short screen, short is_visible)! \\ \hline
-Address & \texttt{0xFFE100} \\ \hline
-\lstinline!screen! & the screen number 0 for channel A, 1 for channel B \\ \hline
-\lstinline!is_visible! & TRUE if the cursor should be visible, FALSE (0) otherwise \\ \hline
+screen & the screen number 0 for channel A, 1 for channel B \\ \hline
+is\_visible & TRUE if the cursor should be visible, FALSE (0) otherwise \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_font}}
+\subsection*{sys\_txt\_set\_font -- 0xFFE104}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_txt_set_font(short screen, short width, short height, unsigned char * data)! \\ \hline
-Address & \texttt{0xFFE104} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!width! & width of a character in pixels \\ \hline
-\lstinline!height! & of a character in pixels \\ \hline
-\lstinline!data! & pointer to the raw font data to be loaded \\ \hline
+screen & the number of the text device \\ \hline
+width & width of a character in pixels \\ \hline
+height & of a character in pixels \\ \hline
+data & pointer to the raw font data to be loaded \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_get\_sizes}}
+\subsection*{sys\_txt\_setsizes -- 0xFFE0E4}
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_setsizes(short chan)! \\ \hline
+chan &  \\ \hline
+\end{tabular}
+
+\subsection*{sys\_txt\_get\_sizes -- 0xFFE108}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_get_sizes(short screen, p_extent text_size, p_extent pixel_size)! \\ \hline
-Address & \texttt{0xFFE108} \\ \hline
-\lstinline!screen! & the screen number 0 for channel A, 1 for channel B \\ \hline
-\lstinline!text_size! & the size of the screen in visible characters (may be null) \\ \hline
-\lstinline!pixel_size! & the size of the screen in pixels (may be null) \\ \hline
+screen & the screen number 0 for channel A, 1 for channel B \\ \hline
+text\_size & the size of the screen in visible characters (may be null) \\ \hline
+pixel\_size & the size of the screen in pixels (may be null) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_border}}
+\subsection*{sys\_txt\_set\_border -- 0xFFE10C}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_border(short screen, short width, short height)! \\ \hline
-Address & \texttt{0xFFE10C} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!width! & the horizontal size of one side of the border (0 - 32 pixels) \\ \hline
-\lstinline!height! & the vertical size of one side of the border (0 - 32 pixels) \\ \hline
+screen & the number of the text device \\ \hline
+width & the horizontal size of one side of the border (0 - 32 pixels) \\ \hline
+height & the vertical size of one side of the border (0 - 32 pixels) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_set\_border\_color}}
+\subsection*{sys\_txt\_set\_border\_color -- 0xFFE110}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_border_color(short screen, unsigned char red, unsigned char green, unsigned char blue)! \\ \hline
-Address & \texttt{0xFFE110} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!red! & the red component of the color (0 - 255) \\ \hline
-\lstinline!green! & the green component of the color (0 - 255) \\ \hline
-\lstinline!blue! & the blue component of the color (0 - 255) \\ \hline
+screen & the number of the text device \\ \hline
+red & the red component of the color (0 - 255) \\ \hline
+green & the green component of the color (0 - 255) \\ \hline
+blue & the blue component of the color (0 - 255) \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_put}}
+\subsection*{sys\_txt\_put -- 0xFFE114}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_put(short screen, char c)! \\ \hline
-Address & \texttt{0xFFE114} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!c! & the character to print \\ \hline
+screen & the number of the text device \\ \hline
+c & the character to print \\ \hline
 \end{tabular}
 
-\subsection*{\texttt{sys\_txt\_print}}
+\subsection*{sys\_txt\_print -- 0xFFE118}
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_print(short screen, const char * message)! \\ \hline
-Address & \texttt{0xFFE118} \\ \hline
-\lstinline!screen! & the number of the text device \\ \hline
-\lstinline!message! & the ASCII Z string to print \\ \hline
+screen & the number of the text device \\ \hline
+message & the ASCII Z string to print \\ \hline
 \end{tabular}

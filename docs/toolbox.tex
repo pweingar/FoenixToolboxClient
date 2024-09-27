@@ -1,10 +1,34 @@
 \documentclass[10pt]{book}
 \usepackage{multirow}
 \usepackage{listings}
+\usepackage{fullpage}
+
 \begin{document}
 \lstset{language=C,basicstyle=\small,showstringspaces=false,columns=fullflexible,stringstyle=\ttfamily}
 
-\chapter{Introduction}
+\begin{titlepage}
+	\begin{center}
+		\vspace*{1cm}
+ 
+		\textbf{\Large Foenix Toolbox Programmer's Guide}
+ 
+		\vspace{0.5cm}
+		
+		Firmware functions for the Foenix Retro System F256 computers
+			 
+		\vspace{1.5cm}
+ 
+		\textbf{Peter Weingartner}
+ 
+		\vfill
+	  
+		\today
+			 
+	\end{center}
+\end{titlepage}
+
+\include{introduction.tex}
+\include{devices.tex}
 
 \chapter{Toolbox Functions}
 \include{channel.tex}
@@ -13,7 +37,5 @@
 \include{text.tex}
 \include{interrupt.tex}
 \include{general.tex}
-
-
 
 \end{document}
