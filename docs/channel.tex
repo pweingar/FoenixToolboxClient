@@ -1,13 +1,50 @@
 \section{Channel Functions}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+\end{verbatim}
+
+
 \subsection*{sys\_chan\_read\_b -- 0xFFE024}
+Read a single character from the channel. Returns the character, or 0 if none are available.
+
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_read_b(short channel)! \\ \hline
 channel & the number of the channel \\ \hline
 Returns & the value read (if negative, error) \\ \hline
 \end{tabular}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Read a byte from channel #0 (keyboard)
+    short b = sys_chan_read_b(0);
+    if (b >= 0) {
+        // We have valid data from 0-255 in b
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    lda #0                 ; Select channel #0
+    jsl sys_chan_read_b    ; Read from the channel
+    bit #$ffff             ; If negative...
+    bmi error              ; Process an error
+
+    ; We have valid data in A
+\end{verbatim}
+
 \subsection*{sys\_chan\_read -- 0xFFE028}
+Read bytes from a channel and fill a buffer with them, given the number of the channel and the size of the buffer. Returns the number of bytes read.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_chan_read(short channel, unsigned char * buffer, short size)! \\ \hline
 channel & the number of the channel \\ \hline
@@ -15,6 +52,38 @@ buffer & the buffer into which to copy the channel data \\ \hline
 size & the size of the buffer. \\ \hline
 Returns & number of bytes read, any negative number is an error code \\ \hline
 \end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    char buffer[80];
+    short n = sys_chan_read(0, buffer, 80);
+    if (n >= 0) {
+        // We correctly read n bytes into the buffer
+	} else {
+        // We have an error
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    pei #80              ; Push the size of the buffer
+
+    pei #`buffer         ; Push the address of the buffer
+    pei #<>buffer
+	
+    lda #0               ; Select channel #0
+	
+    jsl sys_chan_read    ; Try to read the bytes from the channel
+	
+    ply                  ; Clean up the stack
+    ply
+    ply
+	
+    bit #$ffff           ; If result is negative...
+    bmi error            ; Go to process the error
+	
+    sta n                ; Otherwise: save the number of bytes read
+\end{verbatim}
 
 \subsection*{sys\_chan\_readline -- 0xFFE02C}
 \begin{tabular}{|l||l|} \hline
