@@ -3,7 +3,7 @@
 \contentsline {chapter}{\numberline {3}Toolbox Functions}{9}{}%
 \contentsline {section}{\numberline {3.1}Channel Functions}{10}{}%
 \contentsline {section}{\numberline {3.2}Block Device Functions}{17}{}%
-\contentsline {section}{\numberline {3.3}File System Functions}{18}{}%
-\contentsline {section}{\numberline {3.4}Text System Functions}{21}{}%
-\contentsline {section}{\numberline {3.5}Interrupt Functions}{23}{}%
-\contentsline {section}{\numberline {3.6}General Functions}{27}{}%
+\contentsline {section}{\numberline {3.3}File System Functions}{21}{}%
+\contentsline {section}{\numberline {3.4}Text System Functions}{24}{}%
+\contentsline {section}{\numberline {3.5}Interrupt Functions}{26}{}%
+\contentsline {section}{\numberline {3.6}General Functions}{30}{}%

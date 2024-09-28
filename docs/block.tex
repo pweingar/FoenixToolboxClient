@@ -1,6 +1,12 @@
 \section{Block Device Functions}
 
 \subsection*{sys\_bdev\_register -- 0xFFE05C}
+Register a device driver for a block device. A device driver consists of a structure that specifies the name and number of the device as well as the various handler functions that implement the block device calls for that device.
+
+See the section ``Extending the System'' below for more information.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_register(p_dev_block device)! \\ \hline
 device & pointer to the description of the device to register \\ \hline
@@ -8,6 +14,10 @@ Returns & 0 on succes, negative number on error \\ \hline
 \end{tabular}
 
 \subsection*{sys\_bdev\_read -- 0xFFE060}
+Read a block from a block device. Returns the number of bytes read.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_read(short dev, long lba, uint8_t * buffer, short size)! \\ \hline
 dev & the number of the device \\ \hline
@@ -17,7 +27,37 @@ size & the size of the buffer. \\ \hline
 Returns & number of bytes read, any negative number is an error code \\ \hline
 \end{tabular}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    unsigned char buffer[512];
+    
+    // Read the MBR of the interal SD card
+    short n = sys_bdev_read(BDEV_SD1, 0, buffer, 512);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    pei #512			; Push the size of the buffer
+    pei #`buffer		; Push the pointer to the read buffer
+    pei #<>buffer
+    pei #0				; Push LBA = 0
+    pei #0
+    lda #1				; The device number for the internal SD
+
+    jsl sys_bdev_read	; Read sector 0
+
+    ply					; Clean up the stack
+    ply
+    ply
+    ply
+    ply
+\end{verbatim}
+
 \subsection*{sys\_bdev\_write -- 0xFFE064}
+Write a block from a block device. Returns the number of bytes written.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_write(short dev, long lba, const uint8_t * buffer, short size)! \\ \hline
 dev & the number of the device \\ \hline
@@ -27,21 +67,100 @@ size & the size of the buffer. \\ \hline
 Returns & number of bytes written, any negative number is an error code \\ \hline
 \end{tabular}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    unsigned char buffer[512];
+
+    // Fill in the buffer with data...
+    
+    // Write the MBR of the interal SD card
+    short n = sys_bdev_write(BDEV_SD1, 0, buffer, 512);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    pei #512			; Push the size of the buffer
+    pei #`buffer		; Push the pointer to the read buffer
+    pei #<>buffer
+    pei #0				; Push LBA = 0
+    pei #0
+    lda #1				; The device number for the internal SD
+
+    jsl sys_bdev_write	; Write sector 0
+
+    ply					; Clean up the stack
+    ply
+    ply
+    ply
+    ply
+\end{verbatim}
+
 \subsection*{sys\_bdev\_status -- 0xFFE068}
+Gets the status of a block device. The meaning of the status bits is device specific, but there are two bits that are required in order to support the file system:
+\begin{itemize}
+    \item 0x01: Device has not been initialized yet
+    \item 0x02: Device is present
+\end{itemize}
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_status(short dev)! \\ \hline
 dev & the number of the device \\ \hline
 Returns & the status of the device \\ \hline
 \end{tabular}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short bdev = ...; // The device number
+    short status = sys_bdev_status(bdev);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    lda bdev            ; Load the device number
+    jsl sys_bdev_flush  ; Attempt to flush pending writes
+
+    ; Status is in the accumulator
+\end{verbatim}
+
+
 \subsection*{sys\_bdev\_flush -- 0xFFE06C}
+Ensure any pending writes to a block device are completed.
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_flush(short dev)! \\ \hline
 dev & the number of the device \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short bdev = ...; // The device number
+    sys_bdev_flush(bdev);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    lda bdev            ; Load the device number
+    jsl sys_bdev_flush  ; Attempt to flush pending writes
+\end{verbatim}
+
 \subsection*{sys\_bdev\_ioctrl -- 0xFFE070}
+Send a command to a block device. The mapping of commands and their actions are device-specific. The return value is also device and command-specific.
+
+Four commands should be supported by all devices:
+\begin{itemize}
+    \item \verb+GET_SECTOR_COUNT+ (1): Returns the number of physical sectors on the device
+    \item \verb+GET_SECTOR_SIZE+ (2): Returns the size of a physical sector in bytes
+    \item \verb+GET_BLOCK_SIZE+ (3): Returns the block size of the device. Really only relevant for flash devices and only needed by FatFS
+    \item \verb+GET_DRIVE_INFO+ (4): Returns the identification of the drive
+\end{itemize}
+
+\bigskip
+
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_bdev_ioctrl(short dev, short command, uint8_t * buffer, short size)! \\ \hline
 dev & the number of the device \\ \hline
@@ -50,3 +169,26 @@ buffer & pointer to bytes of additional data for the command \\ \hline
 size & the size of the buffer \\ \hline
 Returns & 0 on success, any negative number is an error code \\ \hline
 \end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short dev = ...;                // The device number
+    short cmd = ...;                // The command
+    short r = sys_bdev_ioctrl(dev, cmd, 0, 0); // Send simple command
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    pei #0                  ; Push buffer size of 0
+    pei #0                  ; Push null pointer for buffer
+    pei #0
+    lda cmd                 ; Push the command number
+    pha
+    lda bdev                ; Select the block device
+    
+    jsl sys_bdev_ioctrl     ; Send the command
+
+    ply                     ; Clean up the stack
+    ply
+    ply
+\end{verbatim}
