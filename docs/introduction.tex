@@ -1,4 +1,22 @@
 \chapter{Introduction}
 
+The Foenix Toolbox is simple firmware package for the Foenix Retro Systems F256 computers, when they are fitted with the 65816 CPU and the chipset for the flat memory model. It can be thought of being similar to a BIOS or like the Macintosh Toolbox from the original 68000 based Macintoshes. It has three main purposes:
+\begin{itemize}
+	\item Boot up the computer from a cold boot, initializing all devices
+	\item Look for, load, and start whatever program the user wants to run. Such a program may be on the internal SD card, the external SD card, the flash memory of the F256, or a flash cartridge plugged into the expansion port. For the purposes of code development and testing, the program can be loaded into RAM under certain conditions.
+	\item Provide a standard collection of functions to make it easier for users to write programs to run on the F256s. The functions mainly cover those areas of programming for the machine that would otherwise require a lot of uninteresting re-work or are particularly complicated.
+\end{itemize}
+
+What the Foenix Toolbox is not is a complete operating system. This is on purpose. The Toolbox is meant to help the user get a programming running, but it tries to stay out of the user's way as much as possible. What this means is:
+\begin{itemize}
+	\item The Toolbox uses an absolute minimum of interrupts and hardware timers
+	\item Although the Toolbox provides an interrupt dispatch system for the user program, user programs may take complete control over for the interrupt system and just call into the Toolbox if it needs those services affected
+	\item There is no memory protection or really any memory management set by the Toolbox
+	\item The Toolbox does not provide a command line interface (CLI). Although a separate project may provide a simple one, if the user wants one.
+	\item The Toolbox does not provide a graphical user interface (GUI). If a user wants to create their own, of course they are welcome to it.
+\end{itemize}
+
+The philosophy of the Toolbox is that the owner of a Foenix computer has bought the machine to tinker with and make it do what they want it to do. The Toolbox should be there to help the user but not hinder them or restrict their freedom to do what they want with the machine.
+
 \section*{Copyright Information}
 Foenix Toolbox and all code except for the FatFS file system library are published under the BSD 3 Clause License. Please see the source code for the license terms. The Foenix Toolbox file system is provided by the FatFS file system, which is covered under its own license. For information about the author of FatFS and its license terms, please see the Foenix Toolbox source code.
