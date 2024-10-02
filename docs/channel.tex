@@ -1,17 +1,16 @@
 \section{Channel Functions}
-
-\subsubsection*{Example: C}
-\begin{lstlisting}
-\end{lstlisting}
-
-\subsubsection*{Example: Assembler}
-\begin{verbatim}
-\end{verbatim}
-
+The channel functions provide support for channel or stream based I/O devices.
+Any time a device or program wants to work with data as a sequential stream of bytes or characters,
+that device should be a channel device.
+Examples of channel devices that the Toolbox supports are the console (screen and keyboard), the serial port,
+MIDI devices, and files open on SD cards.
+In the future, there may be other channel devices as well ({\it e.g.} network streams).
+Some channel devices can provide support for higher level functionality.
+As an example, the console channel device provides support for printing ANSI terminal codes to the screen
+and for reading certain keypresses back as ANSI escape sequences (for instance, function key presses).
 
 \subsection*{sys\_chan\_read\_b -- 0xFFE024}
 Read a single character from the channel. Returns the character, or 0 if none are available.
-
 
 \bigskip
 

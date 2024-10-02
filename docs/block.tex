@@ -1,4 +1,14 @@
 \section{Block Device Functions}
+The block device functions provide low-level support for access to block-based storage devices.
+The main operations on block devices are reading a block of data from a device (given the device number and the
+address of the block to read), and writing a block of data to the device.
+These functions are used by the driver to the FatFS library to provide FAT32 file based access to those
+block devices.
+Currently, for the F256, this support is limited to SD cards. The F256jr and F256K have just the one SD card,
+but the F256K2e has an internal and an external SD card.
+Future machines might provide additional block devices ({\it e.g.} floppy drives or hard drives), and if someone
+wanted to build some sort of block device for the F256, a driver to support it could be added to the Toolbox to
+add those devices to the FAT32 file support.
 
 \subsection*{sys\_bdev\_register -- 0xFFE05C}
 Register a device driver for a block device. A device driver consists of a structure that specifies the name and number of the device as well as the various handler functions that implement the block device calls for that device.

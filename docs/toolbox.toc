@@ -7,5 +7,5 @@
 \contentsline {section}{\numberline {3.4}Block Device Functions}{21}{}%
 \contentsline {section}{\numberline {3.5}File System Functions}{24}{}%
 \contentsline {section}{\numberline {3.6}Text System Functions}{36}{}%
-\contentsline {section}{\numberline {3.7}Interrupt Functions}{38}{}%
-\contentsline {chapter}{\numberline {4}F256 Toolbox Boot Process}{43}{}%
+\contentsline {section}{\numberline {3.7}Interrupt Functions}{46}{}%
+\contentsline {chapter}{\numberline {4}F256 Toolbox Boot Process}{51}{}%
