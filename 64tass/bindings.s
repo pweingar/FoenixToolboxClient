@@ -1,6 +1,4 @@
 
-tb				.namespace
-
 ;
 ; extern SYSTEMCALL void sys_proc_exit(short result);
 ; 
@@ -12,7 +10,7 @@ sys_proc_exit = $ffe000
 
 
 ;
-; extern SYSTEMCALL void sys_int_enable_all();
+; extern SYSTEMCALL short sys_int_enable_all();
 ;
 ; 0 bytes needed for the stack parameters
 ;
@@ -20,11 +18,21 @@ sys_int_enable_all = $ffe004
 
 
 ;
-; extern SYSTEMCALL void sys_int_disable_all();
+; extern SYSTEMCALL short sys_int_disable_all();
 ;
 ; 0 bytes needed for the stack parameters
 ;
 sys_int_disable_all = $ffe008
+
+
+;
+; extern SYSTEMCALL void sys_int_restore_all(short state);
+; 
+; state goes in A[15..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_int_restore_all = $ffe00c
 
 
 ;
@@ -34,7 +42,7 @@ sys_int_disable_all = $ffe008
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_int_disable = $ffe00c
+sys_int_disable = $ffe010
 
 
 ;
@@ -44,7 +52,7 @@ sys_int_disable = $ffe00c
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_int_enable = $ffe010
+sys_int_enable = $ffe014
 
 
 ;
@@ -54,7 +62,7 @@ sys_int_enable = $ffe010
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_int_register = $ffe014
+sys_int_register = $ffe018
 
 int_register     .namespace
                 .virtual 1,s
@@ -69,7 +77,7 @@ handler         .dword ?      ; pointer to the interrupt handler to register
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_int_pending = $ffe018
+sys_int_pending = $ffe01c
 
 
 ;
@@ -79,7 +87,7 @@ sys_int_pending = $ffe018
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_get_info = $ffe01c
+sys_get_info = $ffe020
 
 
 ;
@@ -89,7 +97,7 @@ sys_get_info = $ffe01c
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_int_clear = $ffe020
+sys_int_clear = $ffe024
 
 
 ;
@@ -99,7 +107,7 @@ sys_int_clear = $ffe020
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_chan_read_b = $ffe024
+sys_chan_read_b = $ffe028
 
 
 ;
@@ -109,7 +117,7 @@ sys_chan_read_b = $ffe024
 ;
 ; 6 bytes needed for the stack parameters
 ;
-sys_chan_read = $ffe028
+sys_chan_read = $ffe02c
 
 chan_read        .namespace
                 .virtual 1,s
@@ -125,7 +133,7 @@ size            .word ?       ; the size of the buffer.
 ;
 ; 6 bytes needed for the stack parameters
 ;
-sys_chan_readline = $ffe02c
+sys_chan_readline = $ffe030
 
 chan_readline    .namespace
                 .virtual 1,s
@@ -141,7 +149,7 @@ size            .word ?       ; the size of the buffer
 ;
 ; 1 bytes needed for the stack parameters
 ;
-sys_chan_write_b = $ffe030
+sys_chan_write_b = $ffe034
 
 chan_write_b     .namespace
                 .virtual 1,s
@@ -156,7 +164,7 @@ b               .byte ?       ; the byte to write
 ;
 ; 6 bytes needed for the stack parameters
 ;
-sys_chan_write = $ffe034
+sys_chan_write = $ffe038
 
 chan_write       .namespace
                 .virtual 1,s
@@ -172,7 +180,7 @@ size            .word ?       ;
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_chan_status = $ffe038
+sys_chan_status = $ffe03c
 
 
 ;
@@ -182,7 +190,7 @@ sys_chan_status = $ffe038
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_chan_flush = $ffe03c
+sys_chan_flush = $ffe040
 
 
 ;
@@ -192,7 +200,7 @@ sys_chan_flush = $ffe03c
 ;
 ; 6 bytes needed for the stack parameters
 ;
-sys_chan_seek = $ffe040
+sys_chan_seek = $ffe044
 
 chan_seek        .namespace
                 .virtual 1,s
@@ -208,7 +216,7 @@ base            .word ?       ; whether the position is absolute or relative to 
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_chan_ioctrl = $ffe044
+sys_chan_ioctrl = $ffe048
 
 chan_ioctrl      .namespace
                 .virtual 1,s
@@ -225,7 +233,7 @@ size            .word ?       ; the size of the buffer
 ;
 ; 6 bytes needed for the stack parameters
 ;
-sys_chan_open = $ffe048
+sys_chan_open = $ffe04c
 
 chan_open        .namespace
                 .virtual 1,s
@@ -241,7 +249,7 @@ mode            .word ?       ; s the device to be read, written, both? (0x01 = 
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_chan_close = $ffe04c
+sys_chan_close = $ffe050
 
 
 ;
@@ -251,7 +259,7 @@ sys_chan_close = $ffe04c
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_chan_swap = $ffe050
+sys_chan_swap = $ffe054
 
 chan_swap        .namespace
                 .virtual 1,s
@@ -266,17 +274,7 @@ channel2        .word ?       ; the ID of the other channel
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_chan_device = $ffe054
-
-
-;
-; extern SYSTEMCALL void sys_text_setsizes(short chan);
-; 
-; chan goes in A[15..0]
-;
-; 0 bytes needed for the stack parameters
-;
-sys_text_setsizes = $ffe0E4
+sys_chan_device = $ffe058
 
 
 ;
@@ -286,7 +284,7 @@ sys_text_setsizes = $ffe0E4
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_bdev_register = $ffe05c
+sys_bdev_register = $ffe060
 
 
 ;
@@ -296,7 +294,7 @@ sys_bdev_register = $ffe05c
 ;
 ; 10 bytes needed for the stack parameters
 ;
-sys_bdev_read = $ffe060
+sys_bdev_read = $ffe064
 
 bdev_read        .namespace
                 .virtual 1,s
@@ -313,7 +311,7 @@ size            .word ?       ; the size of the buffer.
 ;
 ; 10 bytes needed for the stack parameters
 ;
-sys_bdev_write = $ffe064
+sys_bdev_write = $ffe068
 
 bdev_write       .namespace
                 .virtual 1,s
@@ -330,7 +328,7 @@ size            .word ?       ; the size of the buffer.
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_bdev_status = $ffe068
+sys_bdev_status = $ffe06c
 
 
 ;
@@ -340,7 +338,7 @@ sys_bdev_status = $ffe068
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_bdev_flush = $ffe06c
+sys_bdev_flush = $ffe070
 
 
 ;
@@ -350,7 +348,7 @@ sys_bdev_flush = $ffe06c
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_bdev_ioctrl = $ffe070
+sys_bdev_ioctrl = $ffe074
 
 bdev_ioctrl      .namespace
                 .virtual 1,s
@@ -367,7 +365,7 @@ size            .word ?       ; the size of the buffer
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_fsys_open = $ffe074
+sys_fsys_open = $ffe078
 
 fsys_open        .namespace
                 .virtual 1,s
@@ -382,7 +380,7 @@ mode            .word ?       ; the mode (e.g. r/w/create)
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_close = $ffe078
+sys_fsys_close = $ffe07c
 
 
 ;
@@ -392,7 +390,7 @@ sys_fsys_close = $ffe078
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_opendir = $ffe07c
+sys_fsys_opendir = $ffe080
 
 
 ;
@@ -402,7 +400,7 @@ sys_fsys_opendir = $ffe07c
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_closedir = $ffe080
+sys_fsys_closedir = $ffe084
 
 
 ;
@@ -412,7 +410,7 @@ sys_fsys_closedir = $ffe080
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_readdir = $ffe084
+sys_fsys_readdir = $ffe088
 
 fsys_readdir     .namespace
                 .virtual 1,s
@@ -427,7 +425,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_fsys_findfirst = $ffe088
+sys_fsys_findfirst = $ffe08c
 
 fsys_findfirst   .namespace
                 .virtual 1,s
@@ -443,7 +441,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_findnext = $ffe08c
+sys_fsys_findnext = $ffe090
 
 fsys_findnext    .namespace
                 .virtual 1,s
@@ -458,7 +456,7 @@ file            .dword ?      ; pointer to the t_file_info structure to fill out
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_get_label = $ffe090
+sys_fsys_get_label = $ffe094
 
 fsys_get_label   .namespace
                 .virtual 1,s
@@ -473,7 +471,7 @@ label           .dword ?      ; buffer that will hold the label... should be at 
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_set_label = $ffe094
+sys_fsys_set_label = $ffe098
 
 fsys_set_label   .namespace
                 .virtual 1,s
@@ -488,7 +486,7 @@ label           .dword ?      ; buffer that holds the label
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_mkdir = $ffe098
+sys_fsys_mkdir = $ffe09c
 
 
 ;
@@ -498,7 +496,7 @@ sys_fsys_mkdir = $ffe098
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_delete = $ffe09c
+sys_fsys_delete = $ffe0a0
 
 
 ;
@@ -508,7 +506,7 @@ sys_fsys_delete = $ffe09c
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_rename = $ffe0a0
+sys_fsys_rename = $ffe0a4
 
 fsys_rename      .namespace
                 .virtual 1,s
@@ -523,7 +521,7 @@ new_path        .dword ?      ; the new path for the file
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_fsys_set_cwd = $ffe0a4
+sys_fsys_set_cwd = $ffe0a8
 
 
 ;
@@ -533,7 +531,7 @@ sys_fsys_set_cwd = $ffe0a4
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_fsys_get_cwd = $ffe0a8
+sys_fsys_get_cwd = $ffe0ac
 
 fsys_get_cwd     .namespace
                 .virtual 1,s
@@ -548,7 +546,7 @@ size            .word ?       ; the size of the buffer in bytes
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_fsys_load = $ffe0ac
+sys_fsys_load = $ffe0b0
 
 fsys_load        .namespace
                 .virtual 1,s
@@ -564,7 +562,7 @@ start           .dword ?      ; pointer to the long variable to fill with the st
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_register_loader = $ffe0b0
+sys_fsys_register_loader = $ffe0b4
 
 fsys_register_loader .namespace
                 .virtual 1,s
@@ -579,7 +577,7 @@ loader          .dword ?      ; pointer to the file load routine to add
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_fsys_stat = $ffe0b4
+sys_fsys_stat = $ffe0b8
 
 fsys_stat        .namespace
                 .virtual 1,s
@@ -592,7 +590,7 @@ file            .dword ?      ; pointer to a file info record to fill in, if the
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_mem_get_ramtop = $ffe0b8
+sys_mem_get_ramtop = $ffe0bc
 
 
 ;
@@ -602,7 +600,7 @@ sys_mem_get_ramtop = $ffe0b8
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_mem_reserve = $ffe0bc
+sys_mem_reserve = $ffe0c0
 
 
 ;
@@ -610,7 +608,7 @@ sys_mem_reserve = $ffe0bc
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_time_jiffies = $ffe0c0
+sys_time_jiffies = $ffe0c4
 
 
 ;
@@ -620,7 +618,7 @@ sys_time_jiffies = $ffe0c0
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_rtc_set_time = $ffe0c4
+sys_rtc_set_time = $ffe0c8
 
 
 ;
@@ -630,7 +628,7 @@ sys_rtc_set_time = $ffe0c4
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_rtc_get_time = $ffe0c8
+sys_rtc_get_time = $ffe0cc
 
 
 ;
@@ -638,7 +636,7 @@ sys_rtc_get_time = $ffe0c8
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_kbd_scancode = $ffe0cc
+sys_kbd_scancode = $ffe0d0
 
 
 ;
@@ -648,7 +646,7 @@ sys_kbd_scancode = $ffe0cc
 ;
 ; 0 bytes needed for the stack parameters
 ;
-sys_kbd_layout = $ffe0d4
+sys_kbd_layout = $ffe0d8
 
 
 ;
@@ -658,7 +656,7 @@ sys_kbd_layout = $ffe0d4
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_proc_run = $ffe0d8
+sys_proc_run = $ffe0dc
 
 proc_run         .namespace
                 .virtual 1,s
@@ -674,11 +672,27 @@ argv            .dword ?      ; the array of string arguments
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_txt_set_mode = $ffe0e0
+sys_txt_set_mode = $ffe0e4
 
 txt_set_mode     .namespace
                 .virtual 1,s
 mode            .word ?       ; a bitfield of desired display mode options
+                .endv
+                .endn
+
+;
+; extern SYSTEMCALL short sys_txt_set_resolution(short screen, short width, short height);
+; 
+; screen goes in A[15..0]
+;
+; 4 bytes needed for the stack parameters
+;
+sys_txt_set_resolution = $ffe0e8
+
+txt_set_resolution .namespace
+                .virtual 1,s
+width           .word ?       ; the desired horizontal resolution in pixels
+height          .word ?       ; the desired veritical resolution in pixels
                 .endv
                 .endn
 
@@ -689,7 +703,7 @@ mode            .word ?       ; a bitfield of desired display mode options
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_set_xy = $ffe0e8
+sys_txt_set_xy = $ffe0f0
 
 txt_set_xy       .namespace
                 .virtual 1,s
@@ -705,7 +719,7 @@ y               .word ?       ; the row for the cursor
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_get_xy = $ffe0ec
+sys_txt_get_xy = $ffe0f4
 
 txt_get_xy       .namespace
                 .virtual 1,s
@@ -720,7 +734,7 @@ position        .dword ?      ; pointer to a t_point record to fill out
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_get_region = $ffe0f0
+sys_txt_get_region = $ffe0f8
 
 txt_get_region   .namespace
                 .virtual 1,s
@@ -735,7 +749,7 @@ region          .dword ?      ; pointer to a t_rect describing the rectangular r
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_set_region = $ffe0f4
+sys_txt_set_region = $ffe0fc
 
 txt_set_region   .namespace
                 .virtual 1,s
@@ -750,7 +764,7 @@ region          .dword ?      ; pointer to a t_rect describing the rectangular r
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_txt_set_color = $ffe0f8
+sys_txt_set_color = $ffe100
 
 txt_set_color    .namespace
                 .virtual 1,s
@@ -766,12 +780,29 @@ background      .byte ?       ; the Text LUT index of the new current background
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_txt_get_color = $ffe0fc
+sys_txt_get_color = $ffe104
 
 txt_get_color    .namespace
                 .virtual 1,s
 foreground      .dword ?      ; the Text LUT index of the new current foreground color (0 - 15)
 background      .dword ?      ; the Text LUT index of the new current background color (0 - 15)
+                .endv
+                .endn
+
+;
+; extern SYSTEMCALL void sys_txt_set_cursor(short screen, short enable, short rate, char c);
+; 
+; screen goes in A[15..0]
+;
+; 5 bytes needed for the stack parameters
+;
+sys_txt_set_cursor = $ffe108
+
+txt_set_cursor   .namespace
+                .virtual 1,s
+enable          .word ?       ; 0 to hide, any other number to make visible
+rate            .word ?       ; the blink rate for the cursor (0=1s, 1=0.5s, 2=0.25s, 3=1/5s)
+c               .byte ?       ; the character in the current font to use as a cursor
                 .endv
                 .endn
 
@@ -782,7 +813,7 @@ background      .dword ?      ; the Text LUT index of the new current background
 ;
 ; 2 bytes needed for the stack parameters
 ;
-sys_txt_set_cursor_visible = $ffe100
+sys_txt_set_cursor_visible = $ffe10c
 
 txt_set_cursor_visible .namespace
                 .virtual 1,s
@@ -797,7 +828,7 @@ is_visible      .word ?       ; TRUE if the cursor should be visible, FALSE (0) 
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_txt_set_font = $ffe104
+sys_txt_set_font = $ffe110
 
 txt_set_font     .namespace
                 .virtual 1,s
@@ -808,13 +839,23 @@ data            .dword ?      ; pointer to the raw font data to be loaded
                 .endn
 
 ;
+; extern SYSTEMCALL void sys_txt_setsizes(short chan);
+; 
+; chan goes in A[15..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_txt_setsizes = $ffe0ec
+
+
+;
 ; extern SYSTEMCALL void sys_txt_get_sizes(short screen, p_extent text_size, p_extent pixel_size);
 ; 
 ; screen goes in A[15..0]
 ;
 ; 8 bytes needed for the stack parameters
 ;
-sys_txt_get_sizes = $ffe108
+sys_txt_get_sizes = $ffe114
 
 txt_get_sizes    .namespace
                 .virtual 1,s
@@ -830,7 +871,7 @@ pixel_size      .dword ?      ; the size of the screen in pixels (may be null)
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_set_border = $ffe10c
+sys_txt_set_border = $ffe118
 
 txt_set_border   .namespace
                 .virtual 1,s
@@ -846,7 +887,7 @@ height          .word ?       ; the vertical size of one side of the border (0 -
 ;
 ; 3 bytes needed for the stack parameters
 ;
-sys_txt_set_border_color = $ffe110
+sys_txt_set_border_color = $ffe11c
 
 txt_set_border_color .namespace
                 .virtual 1,s
@@ -863,7 +904,7 @@ blue            .byte ?       ; the blue component of the color (0 - 255)
 ;
 ; 1 bytes needed for the stack parameters
 ;
-sys_txt_put = $ffe114
+sys_txt_put = $ffe120
 
 txt_put          .namespace
                 .virtual 1,s
@@ -878,12 +919,10 @@ c               .byte ?       ; the character to print
 ;
 ; 4 bytes needed for the stack parameters
 ;
-sys_txt_print = $ffe118
+sys_txt_print = $ffe124
 
 txt_print        .namespace
                 .virtual 1,s
 message         .dword ?      ; the ASCII Z string to print
                 .endv
                 .endn
-
-				.endn

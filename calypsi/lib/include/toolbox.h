@@ -20,23 +20,30 @@
 /**
  * Quit the current user process
  *
- * NOTE: at the moment, this relaunches the CLI. In the future, this
- *       may cause execution to return to the program that started
- *       the user process.
- *
  * @param result the code to return to the kernel
  */
 extern SYSTEMCALL void sys_proc_exit(short result);
 
 /**
- * Enable all interrupts
+ * Enable all interrupts at the CPU level
+ * 
+ * @return a machine dependent representation of the previous interrupt mask state
  */
-extern SYSTEMCALL void sys_int_enable_all();
+extern SYSTEMCALL short sys_int_enable_all();
 
 /**
- * Disable all interrupts
+ * Disable all interrupts at the CPU level
+ * 
+ * @return a machine dependent representation of the previous interrupt mask state
  */
-extern SYSTEMCALL void sys_int_disable_all();
+extern SYSTEMCALL short sys_int_disable_all();
+
+/**
+ * Restore the CPU interrupt state
+ * 
+ * @param state machine dependent representation of the previous interrupt mask state
+ */
+extern SYSTEMCALL void sys_int_restore_all(short state);
 
 /**
  * Disable an interrupt by masking it
@@ -581,6 +588,17 @@ extern SYSTEMCALL const p_txt_capabilities sys_txt_get_capabilities(short screen
 extern SYSTEMCALL short sys_txt_set_mode(short screen, short mode);
 
 /**
+ * Set the display resolution of the screen
+ *
+ * @param screen the number of the text device
+ * @param width the desired horizontal resolution in pixels
+ * @param height the desired veritical resolution in pixels
+ *
+ * @return 0 on success, any other number means the resolution is unsupported
+ */
+extern SYSTEMCALL short sys_txt_set_resolution(short screen, short width, short height);
+
+/**
  * Set the position of the cursor to (x, y) relative to the current region
  * If the (x, y) coordinate is outside the region, it will be clipped to the region.
  * If y is greater than the height of the region, the region will scroll until that relative
@@ -639,6 +657,16 @@ extern SYSTEMCALL void sys_txt_set_color(short screen, unsigned char foreground,
  * background = pointer to the background color number
  */
 extern SYSTEMCALL void sys_txt_get_color(short screen, unsigned char * foreground, unsigned char * background);
+
+/**
+ * Set the appearance of the cursor
+ *
+ * @param screen the number of the text device
+ * @param enable 0 to hide, any other number to make visible
+ * @param rate the blink rate for the cursor (0=1s, 1=0.5s, 2=0.25s, 3=1/5s)
+ * @param c the character in the current font to use as a cursor
+ */
+extern SYSTEMCALL void sys_txt_set_cursor(short screen, short enable, short rate, char c);
 
 /**
  * Set if the cursor is visible or not

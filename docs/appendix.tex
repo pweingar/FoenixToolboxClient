@@ -1,0 +1,212 @@
+\chapter{Appendix}
+
+\section{Console IOCTRL Commands}
+The console channel driver supports the following commands for \verb+sys_chan_ioctrl+.
+None of these IOCTRL commands require a buffer, so passing NULL for the buffer and 0 for the size is recommended.
+
+\begin{enumerate}
+	\item \verb+CON_IOCTRL_ANSI_ON+: Turn on ANSI escape sequence processing.\footnote{ANSI processing is on by default.}
+	\item \verb+CON_IOCTRL_ANSI_OFF+: Turn off ANSI escape sequence processing.
+	\item \verb+CON_IOCTRL_ECHO_ON+: Turn on character echoing for \verb+sys_chan_read_b+.\footnote{Echo is on be default.}
+	\item \verb+CON_IOCTRL_ECHO_OFF+: Turn off character echoing for \verb+sys_chan_read_b+.
+	\item \verb+CON_IOCTRL_BREAK+: Check to see if the user has pressed the BREAK key sequence.\footnote{{\tt sys\_chan\_ioctrl} will return a non-zero value if the BREAK key was pressed, and 0 if not. On all Foenix machines, CTRL-C (code point 0x03) will be treated as the BREAK key. On the A2560K, the combination Foenix-ESC will also work as the BREAK key. On the F256K, the RUN/STOP key will be treated as the BREAK key.}
+	\item \verb+CON_IOCTRL_CURS_ON+: The text mode cursor should be visible.\footnote{Cursor is on by default.}
+	\item \verb+CON_IOCTRL_CURS_OFF+: The text mode cursor should be hidden
+\end{enumerate}
+
+\section{ANSI Terminal Codes}
+Foenix Toolbox supports a basic subset of the VT102 ANSI terminal codes. The following escape sequences are shown in table~\ref{tbl:ansi_terminal_codes}.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Sequence & Name & Function \\ \hline\hline
+		\verb+ESC [ # @+ & ICH & Insert characters \\ \hline
+		\verb+ESC [ # A+ & CUU & Move the cursor up \\ \hline
+		\verb+ESC [ # B+ & CUF & Move the cursor forward \\ \hline
+		\verb+ESC [ # C+ & CUB & Move the cursor back \\ \hline
+		\verb+ESC [ # D+ & CUD & Move the cursor down \\ \hline
+		\verb+ESC [ # J+ & ED & Erase the screen \\ \hline
+		\verb+ESC [ # K+ & EL & Erase the line \\ \hline
+		\verb+ESC [ # P+ & DCH & Delete characters \\ \hline
+		\verb+ESC [ # ; # H+ & CUP & Set the cursor position \\ \hline
+		\verb+ESC [ # m+ & SGR & Set the graphics rendition \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI Terminal Codes}
+    \label{tbl:ansi_terminal_codes}
+\end{table}
+
+For the SGR sequence, a fairly limited set of codes are currently supported, mainly to do with the color and intensity of the text (see table:~\ref{tbl:ansi_sgr_codes}).
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Code & Function \\ \hline\hline
+		0 & Reset to defaults \\ \hline
+		1 & High intensity / Bold \\ \hline
+		2 & Low intensity / Normal \\ \hline
+		22 & Normal \\ \hline
+		30 -- 37 & Set foreground color \\ \hline
+		40 -- 47 & Set background color \\ \hline
+		90 -- 97 & Set bright foreground color \\ \hline
+		100 -- 107 & Set bright background color \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI SGR Codes}
+    \label{tbl:ansi_sgr_codes}
+\end{table}
+
+NOTE: If the program does not want the console to interpret ANSI codes, this feature can be turned off by calling \verb+sys_chan_ioctrl+ on the console channel to be changed. A command of 0x01 will turn ANSI interpretation on, while a command of 0x02 will turn it off. When ANSI interpretation is turned off, only the core ASCII control characters will still be recognized: 0x08 (backspace), 0x09 (TAB), 0x0A (linefeed), and 0x13 (carriage return).
+
+For key presses, escape codes (see table~\ref{tbl:ansi_key_codes}) are sent to the calling program,
+when one of the \verb+sys_chan_read+ functions is used on the channel.
+Note that this feature is always on in the current system. Also, in the following codes, there are no actual spaces.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Key & Code \\ \hline\hline
+		ESC & \verb+ESC ESC+ \\ \hline
+		Cursor UP & \verb+ESC [ # A+ \\ \hline
+		Cursor Down & \verb+ESC [ # B+ \\ \hline
+		Cursor Left & \verb+ESC [ # C+ \\ \hline
+		Cursor Right & \verb+ESC [ # D+ \\ \hline
+		HOME & \verb+ESC [ 1 ; # ~+ \\ \hline
+		INS & \verb+ESC [ 2 ; # ~+ \\ \hline
+		DELETE & \verb+ESC [ 3 ; # ~+ \\ \hline
+		END & \verb+ESC [ 4 ; # ~+ \\ \hline
+		PAGE UP & \verb+ESC [ 5 ; # ~+ \\ \hline
+		PAGE DOWN & \verb+ESC [ 8 ; # ~+ \\ \hline
+		F1 & \verb+ESC [ 11 ; # ~+ \\ \hline
+		F2 & \verb+ESC [ 12 ; # ~+ \\ \hline
+		F3 & \verb+ESC [ 13 ; # ~+ \\ \hline
+		F4 & \verb+ESC [ 14 ; # ~+ \\ \hline
+		F5 & \verb+ESC [ 15 ; # ~+ \\ \hline
+		F6 & \verb+ESC [ 17 ; # ~+ \\ \hline
+		F7 & \verb+ESC [ 18 ; # ~+ \\ \hline
+		F8 & \verb+ESC [ 19 ; # ~+ \\ \hline
+		F9 & \verb+ESC [ 20 ; # ~+ \\ \hline
+		F10 & \verb+ESC [ 21 ; # ~+ \\ \hline
+		F11 & \verb+ESC [ 23 ; # ~+ \\ \hline
+		F12 & \verb+ESC [ 24 ; # ~+ \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI Key Codes}
+    \label{tbl:ansi_key_codes}
+\end{table}
+
+% Key
+% Code
+
+
+% The “#” in the sequences above represent an optional modifier code. If SHIFT, CTRL, or ALT is pressed with the key, the number sign is replaced with a decimal number representing a bitfield of the modifier keys, followed by a semicolon. The bit values are: SHIFT = 1, ALT = 2, CTRL = 4, and OS (Foenix) = 8. 
+
+\section{Keyboard Scancodes}
+Foenix Toolbox uses the same Foenix scan codes that the original 65816 Foenix kernel and Foenix/MCP used.
+These scan codes are derived from the standard ``set 1'' scan codes with modifications to get the scan codes to fit within a single byte.
+The base scan codes for a US QWERTY keyboard are listed below.
+
+When a key is pressed or released, bits 0 -- 6 are the same, and follow the table below.
+A ``make'' scan code is sent when the key is pressed.
+For make scan codes, bit 7 is clear (0).
+A ``break'' scan code is sent when a key is released.
+For break scan codes, bit 7 is set (1).
+
+Example---the user presses and releases the space bar: Two scan codes will be sent.
+First, the make code 0x39 will be sent.
+Second, the break scan code of 0xB9 will be sent when the key is released.
+
+\begin{table}[ht]
+    \begin{center}
+        \begin{tabular}{|l||l|l|l|l|l|l|l|} \hline
+                 & 0x00     & 0x10      & 0x20      & 0x30     & 0x40   & 0x50   & 0x60    \\ \hline\hline
+            0x00 &          &    Q      &    D      &    B     &   F6   &  KP2   & PRSN    \\ \hline
+            0x01 & ESC      &    W      &    F      &    N     &   F7   &  KP3   & PAUSE   \\ \hline
+            0x02 & 1	    &    E      & G         & M        & F8     &  KP0   & INS     \\ \hline
+            0x03 & 2	    &    R      & H         & \verb+<+ & F9     &  KP.   & HOME    \\ \hline
+            0x04 & 3	    &    T      & J         & \verb+>+ & F10    &        & PGUP    \\ \hline
+            0x05 & 4	    &    Y      & K         & \verb+/+ & NUMLCK &        & DEL     \\ \hline
+            0x06 & 5	    &    U      & L         & R SHFT   & SCRLCK &        & END     \\ \hline
+            0x07 & 6	    &    I      & \verb+;+  & KP*      & KP7    & F11    & PGDN    \\ \hline
+            0x08 & 7	    &    O      & \verb+"+  & L ALT    & KP8    & F12    & UP      \\ \hline
+            0x09 & 8        &    P      & \verb+~+  & SPACE    & KP9    &        & LEFT    \\ \hline
+            0x0A & 9        & \verb+[+  & L SHFT    & CAPS     & KP-    &        & DOWN    \\ \hline
+            0x0B & 0        & \verb+]+  & \verb+\+  & F1       & KP4    & L FNX  & RIGHT   \\ \hline
+            0x0C & \verb+-+ & ENTER     & Z         & F2       & KP5    & R ALT  & KP/     \\ \hline
+            0x0D & \verb+=+ & L CTRL    & X         & F3       & KP6    & R FNX  & KPENTER \\ \hline
+            0x0E & BKSP     & A         & C         & F4       & KP+    & R CTRL &         \\ \hline
+            0x0F & TAB      & S         & V         & F5       & KP1    &        &         \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{Keyboard Scancodes}
+    \label{tbl:kbd_scancodes}
+\end{table}
+
+\section{Useful Data Structures}
+
+\subsection*{Time}
+\begin{lstlisting}
+// Structure used for real time clock functions
+struct s_time {
+    short year;       // Year (0 - 9999)
+    short month;      // Month (1 = January through 12 = December)
+    short day;        // Day of month (1 - 31)
+    short hour;       // Hour (0 - 12 / 23)
+    short minute;     // Minute (0 - 59)
+    short second;     // Seconds (0 - 59)
+    short is_pm;	    // For 12-hour clock, 1 = PM
+    short is_24hours; // 1 = clock is 24-hours, 0 = clock is 12-hours
+}
+\end{lstlisting}
+
+\subsection*{Directory Entries}
+\begin{lstlisting}
+// Structure used for directory entry information
+struct s_file_info {
+    long size;                // Size of the file in bytes
+    unsigned short date;      // Creation date
+    unsigned short time;      // Creation time
+    unsigned char attributes; // Attribute bits
+    char name[MAX_PATH_LEN];  // Name of the file (256 bytes)
+}
+\end{lstlisting}
+
+File attribute bits:
+
+\bigskip
+
+\begin{tabular}{|l|l|} \hline
+0x01 & Read only \\ \hline
+0x02 & Hidden file \\ \hline
+0x04 & System file \\ \hline
+0x10 & Directory \\ \hline
+0x20 & Archive \\ \hline
+\end{tabular}
+
+\subsection*{System Information}
+\begin{lstlisting}
+/*
+ * Structure to describe the hardware
+ */
+struct s_sys_info {
+    uint16_t mcp_version;     		/* Current version of the MCP kernel */
+    uint16_t mcp_rev;         		/* Current revision, or sub-version of the MCP kernel */
+    uint16_t mcp_build;       		/* Current vuild # of the MCP kernel */
+    uint16_t model;           		/* Code to say what model of machine this is */
+    uint16_t sub_model;         	/* 0x00 = PB, 0x01 = LB, 0x02 = CUBE */
+    const char * model_name;        /* Human readable name of the model of the computer */
+    uint16_t cpu;             		/* Code to say which CPU is running */
+    const char * cpu_name;          /* Human readable name for the CPU */
+    uint32_t cpu_clock_khz;     	/* Speed of the CPU clock in KHz */
+    unsigned long fpga_date;        /* YYYYMMDD */    
+    uint16_t fpga_model;       		/* FPGA model number */
+    uint16_t fpga_version;    		/* FPGA version */
+    uint16_t fpga_subver;     		/* FPGA sub-version */
+    uint32_t system_ram_size;		/* The number of bytes of system RAM on the board */
+    bool has_floppy;                /* TRUE if the board has a floppy drive installed */
+    bool has_hard_drive;            /* TRUE if the board has a PATA device installed */
+    bool has_expansion_card;        /* TRUE if an expansion card is installed on the device */
+    bool has_ethernet;              /* TRUE if an ethernet port is present */
+    uint16_t screens;         		/* How many screens are on this computer */
+};
+\end{lstlisting}

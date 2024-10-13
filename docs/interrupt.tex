@@ -1,48 +1,78 @@
 \section{Interrupt Functions}
 
 \subsection*{sys\_int\_enable\_all -- 0xFFE004}
-This function enables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+This function enables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking.
+Returns a machine dependent representation of the CPU interrupt mask state that can be used to restore the state later.
+Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
 
 \bigskip
 
 \begin{tabular}{|l||l|} \hline
-Prototype & \lstinline!void sys_int_enable_all()! \\ \hline
+Prototype & \lstinline!short sys_int_enable_all()! \\ \hline
 \end{tabular}
 
 \subsubsection*{Example: C}
 \begin{lstlisting}
 // Enable processing of IRQs
-sys_int_enable_all();
+short state = sys_int_enable_all();
 \end{lstlisting}
 
 \subsubsection*{Example: Assembler}
 \begin{verbatim}
 ; Enable processing of IRQs
-jrl sys_int_enable_all
+jsl sys_int_enable_all
 \end{verbatim}
 
 \subsection*{sys\_int\_disable\_all -- 0xFFE008}
-This function disables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+This function disables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. 
+Returns a machine dependent representation of the CPU interrupt mask state that can be used to restore the state later.
+Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
 
 \bigskip
 
 \begin{tabular}{|l||l|} \hline
-Prototype & \lstinline!void sys_int_disable_all()! \\ \hline
+Prototype & \lstinline!short sys_int_disable_all()! \\ \hline
 \end{tabular}
 
 \subsubsection*{Example: C}
 \begin{lstlisting}
 // Disable processing of IRQs
-sys_int_disable_all();
+short state = sys_int_disable_all();
 \end{lstlisting}
 
 \subsubsection*{Example: Assembler}
 \begin{verbatim}
 ; Disable processing of IRQs
-jrl sys_int_disable_all
+jsl sys_int_disable_all
 \end{verbatim}
 
-\subsection*{sys\_int\_disable -- 0xFFE00C}
+
+\subsection*{sys\_int\_restore\_all -- 0xFFE00C}
+Restores 
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_restore_all(short state)! \\ \hline
+state & the machine depended CPU interrupt state to restore
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Restore state of IRQ processing after enabling/disabling all
+short state = ...;
+
+sys_int_restore_all(state);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Restore state of IRQ processing after enabling/disabling all
+lda state
+jsl sys_int_restore_all
+\end{verbatim}
+
+\subsection*{sys\_int\_disable -- 0xFFE010}
 This function disables a particular interrupt at the level of the interrupt controller. The argument passed is the number of the interrupt to disable.
 
 \bigskip
@@ -64,7 +94,7 @@ sys_int_disable(INT_SOF_A);
     jsl sys_int_disable
 \end{verbatim}
 
-\subsection*{sys\_int\_enable -- 0xFFE010}
+\subsection*{sys\_int\_enable -- 0xFFE014}
 This function enables a particular interrupt at the level of the interrupt controller. The argument passed is the number of the interrupt to enable. Note that interrupts that are enabled at this level will still be disabled, if interrupts are disabled globally by \verb+sys_int_disable_all+.
 
 \bigskip
@@ -86,10 +116,10 @@ sys_int_enable(INT_SOF_A);
     jsl sys_int_enable
 \end{verbatim}
 
-\subsection*{sys\_int\_register -- 0xFFE014}
+\subsection*{sys\_int\_register -- 0xFFE018}
 Registers a function as an interrupt handler. An interrupt handler is a function which takes and returns no arguments and will be run in at an elevated privilege level during the interrupt handling cycle.
 
-The first argument is the number of the interrupt to handle, the second argument is a pointer to the interrupt handler to register. Registering a null pointer as an interrupt handler will “deregister” the old handler.
+The first argument is the number of the interrupt to handle, the second argument is a pointer to the interrupt handler to register. Registering a null pointer as an interrupt handler will ``deregister'' the old handler.
 
 The function returns the handler that was previously registered.
 
@@ -135,7 +165,7 @@ sof_handler:
     stx old+2
 \end{verbatim}
 
-\subsection*{sys\_int\_pending -- 0xFFE018}
+\subsection*{sys\_int\_pending -- 0xFFE01C}
 Query an interrupt to see if it is pending in the interrupt controller.
 NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
 
@@ -169,7 +199,7 @@ if (is_pending) {
 sof_not_pending:
 \end{verbatim}
 
-\subsection*{sys\_int\_clear -- 0xFFE020}
+\subsection*{sys\_int\_clear -- 0xFFE024}
 This function acknowledges the processing of an interrupt by clearing its pending flag in the interrupt controller.
 NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
 

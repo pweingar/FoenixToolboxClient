@@ -13,11 +13,30 @@ All text functions take a screen number. For the F256 as of the time of this wri
 If at some point, an F256 with multi-screen support is created or a graphics expansion card is produced, that additional
 screen could be supported by the Toolbox with the addition of a text mode driver.
 
-% TODO: Missing function sys_txt_set_cursor
-% TODO: Missing function sys_txt_get_capabilities
-% TODO: Missing function sys_txt_set_resolution
+\subsection*{sys\_txt\_get\_capabilities  -- 0xFFE0E4}
+Gets the description of a screen's capabilities.
+The capabilities are returned as a pointer to a structure that provides a bitfield of the various modes supported, a listing of different font sizes that are supported (the F256 currently supports only 8 by 8 fonts), and a listing of different screen resolutions supported by the screen.
 
-\subsection*{sys\_txt\_set\_mode -- 0xFFE0E0}
+\begin{lstlisting}
+	struct s_txt_capabilities {
+		short number;               /* The unique ID of the screen */
+		short supported_modes;      /* The display modes supported on this screen */
+		short font_size_count;      /* The number of supported font sizes */
+		p_extent font_sizes;        /* Pointer to a list of t_extent listing all supported font sizes */
+		short resolution_count;     /* The number of supported display resolutions */
+		p_extent resolutions;       /* Pointer to a list of t_extent for supported resolutions (in pixels) */
+	}
+\end{lstlisting}
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!const p_txt_capabilities sys_txt_get_capabilities(short screen)! \\ \hline
+screen & the number of the text device \\ \hline
+Returns & a pointer to the read-only description (0 on error) \\ \hline
+\end{tabular}
+
+\subsection*{sys\_txt\_set\_mode -- 0xFFE0E4}
 Set the display mode of the screen. There are five basic modes supported which are indicated by the five flags:
 \begin{itemize}
     \item \verb+TXT_MODE_TEXT+---Render base text
@@ -61,8 +80,40 @@ Returns & 0 on success, any other number means the mode is invalid for the scree
     ply                                   ; Clean up the stack
 \end{verbatim}
 
+\subsection*{sys\_txt\_set\_resolution -- 0xFFE0E8}
+Set the display resolution of the screen.
+The width and height must match one of the resolutions listed in the screen's capabilities.
 
-\subsection*{sys\_txt\_set\_xy -- 0xFFE0E8}
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_set_resolution(short screen, short width, short height)! \\ \hline
+screen & the number of the text device \\ \hline
+width & the desired horizontal resolution in pixels \\ \hline
+height & the desired veritical resolution in pixels \\ \hline
+Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set screen 0 resolution to (320, 240)
+    short result = sys_txt_set_resolution(0, 320, 240);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    pei #240							; Resolution: 320 by 240
+	pei #320
+    lda #0                           	; On screen 0
+    
+    jsl sys_txt_set_mode
+
+    ply                                 ; Clean up the stack
+	ply
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_xy -- 0xFFE0F0}
 Sets the position of the cursor on the screen.
 
 The call takes the number of the screen and the character row (y) and column (x) of the cursor. The cursor positions are specified relative to the origin of the current region set on the screen, so (0, 0) will be the origin of the region, (0, 1) will be the character position right below the origin, and so on.
@@ -94,7 +145,7 @@ y & the row for the cursor \\ \hline
     ply
 \end{verbatim}
 
-\subsection*{sys\_txt\_get\_xy -- 0xFFE0EC}
+\subsection*{sys\_txt\_get\_xy -- 0xFFE0F4}
 Gets the position of the text cursor, given two parameters: the screen number, and the pointer to a \verb+t_point+.
 The cursor position will be copied into the \verb+t_point+ object.
 
@@ -130,7 +181,7 @@ position:
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_get\_region -- 0xFFE0F0}
+\subsection*{sys\_txt\_get\_region -- 0xFFE0F8}
 Gets the origin and size of the rectangle describing the current region.
 
 The call takes a screen number and a pointer to a \verb+t_rect+ structure to fill out with the current information. Returns 0 on success, any other number is an error.
@@ -168,7 +219,7 @@ region:
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_set\_region -- 0xFFE0F4}
+\subsection*{sys\_txt\_set\_region -- 0xFFE0FC}
 Sets the rectangular region of the screen that will be used for all subsequent printing, scrolling, and filling. This call takes the screen number and a pointer to a \verb+t_rect+ structure containing the origin (upper-left corner) and the size (width and height) of the region. These values are specified in character cells, with (0, 0) being the upper-left corner of the screen. If the size of the rectangle is 0 (width = height = 0), then the region will be the full screen.
 
 Returns 0 on success, any other number is an error.
@@ -212,7 +263,7 @@ Returns & 0 on success, any other number means the region was invalid \\ \hline
         .word 0, 0, 5, 5
 \end{verbatim}
 
-\subsection*{sys\_txt\_set\_color -- 0xFFE0F8}
+\subsection*{sys\_txt\_set\_color -- 0xFFE100}
 Set the foreground and background color to use for subsequent prints to the screen.
 Takes the screen number and the color indexes for foreground and background colors (0 -- 15).
 Returns 0 on success, any other number is an error.
@@ -246,7 +297,7 @@ background & the Text LUT index of the new current background color (0 - 15) \\ 
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_get\_color -- 0xFFE0FC}
+\subsection*{sys\_txt\_get\_color -- 0xFFE104}
 Gets the current foreground and background color settings.
 Takes the screen number and two pointers: one for the foreground color value, and one for the background color value.
 Returns 0 on success, any other number is an error.
@@ -295,8 +346,42 @@ background:
     .word ?
 \end{verbatim}
 
+\subsection*{sys\_txt\_set\_cursor -- 0xFFE108}
+Set the appearance of the text mode cursor.
 
-\subsection*{sys\_txt\_set\_cursor\_visible -- 0xFFE100}
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_cursor(short screen, short enable, short rate, char c)! \\ \hline
+screen & the screen number \\ \hline
+enable & 0 to hide, any other number to make visible \\ \hline
+rate & the blink rate for the cursor (0=1s, 1=0.5s, 2=0.25s, 3=1/5s) \\ \hline
+char & the character in the current font to use as a cursor \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the cursor on screen 0
+	// Visible, blink period 0.25s, character @
+    sys_txt_set_cursor(0, 1, 2, '@');
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	pei #'@'	; Cursor character @
+	pei #2		; Blink period 0.25s
+    pei #1      ; Show the cursor
+    lda #0      ; Screen 0
+
+    jsl sys_txt_set_cursor
+
+    ply         ; Clean the stack
+	ply
+	ply
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_cursor\_visible -- 0xFFE10C}
 Sets the visibility of the text cursor.
 
 \bigskip
@@ -324,7 +409,7 @@ is\_visible & TRUE if the cursor should be visible, FALSE (0) otherwise \\ \hlin
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_set\_font -- 0xFFE104}
+\subsection*{sys\_txt\_set\_font -- 0xFFE110}
 Set the font to be used in text mode on the screen. Takes the screen number, the width and height of the characters (in pixels), and a pointer to the actual font data. Returns 0 on success, any other number means the screen is invalid, or the font size is invalid.
 
 NOTE: the font size must be listed in the \verb+font_sizes field+ of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+.
@@ -369,7 +454,7 @@ data & pointer to the raw font data to be loaded \\ \hline
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_setsizes -- 0xFFE0E4}
+\subsection*{sys\_txt\_setsizes -- 0xFFE0EC}
 Sets the text screen device driver to the current screen geometry, based on the display resolution and border size. If a program changes the border or display resolution on its own but still needs to use the Toolbox console or text routines to display text, it should call this function to have the Toolbox recalculate the screen geometry.
 
 \bigskip
@@ -391,7 +476,7 @@ screen & the number of the text device \\ \hline
     jsl sys_txt_setsizes
 \end{verbatim}
 
-\subsection*{sys\_txt\_get\_sizes -- 0xFFE108}
+\subsection*{sys\_txt\_get\_sizes -- 0xFFE114}
 Gets the size of the screen in total pixels (not taking the border into consideration) and visible characters (taking the border into account).
 
 NOTE: \verb+text_size+ and \verb+pixel_size+ can be null (0), in which case that structure will not be filled out, so you do not have to provide a \verb+t_extent+ for a measurement you do not need.
@@ -437,7 +522,7 @@ text_matrix:                ; Holds size of screen in characters
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_set\_border -- 0xFFE10C}
+\subsection*{sys\_txt\_set\_border -- 0xFFE118}
 Sets the size of the border around the screen. Takes the number of the screen and the size of the border width and height. In this context, width is the width of the left and right borders taken separately, and height is the height of the top and bottom borders. So if width is 8 and height is 16, 32 lines will be taken up by the top and bottom borders together, and 16 columns will be taken up by the left and right borders.
 
 NOTE: if the width and height of the borders are 0, the border will be disabled.
@@ -471,7 +556,7 @@ height & the vertical size of one side of the border (0 - 32 pixels) \\ \hline
 \end{verbatim}
 
 
-\subsection*{sys\_txt\_set\_border\_color -- 0xFFE110}
+\subsection*{sys\_txt\_set\_border\_color -- 0xFFE11C}
 Set the color of the border, using red, green, and blue components (which may go from 0 to 255).
 
 \bigskip
@@ -505,7 +590,7 @@ blue & the blue component of the color (0 - 255) \\ \hline
     ply
 \end{verbatim}
 
-\subsection*{sys\_txt\_put -- 0xFFE114}
+\subsection*{sys\_txt\_put -- 0xFFE120}
 Print a character to the screen.
 
 NOTE: No this function does not interpret ANSI terminal codes and will display
@@ -536,7 +621,7 @@ c & the character to print \\ \hline
     ply             ; Clean up the stack
 \end{verbatim}
 
-\subsection*{sys\_txt\_print -- 0xFFE118}
+\subsection*{sys\_txt\_print -- 0xFFE124}
 Print a null-terminated ASCII string to the screen.
 
 NOTE: No this function does not interpret ANSI terminal codes and will display

@@ -10,7 +10,7 @@
 %     lorum ipsum
 % \end{verbatim}
 
-\subsection*{sys\_fsys\_open -- 0xFFE074}
+\subsection*{sys\_fsys\_open -- 0xFFE078}
 Attempt to open a file in the file system for reading or writing.
 Returns a channel number associated with the file.
 If the returned number is negative, there was an error opening the file.
@@ -70,7 +70,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_close -- 0xFFE078}
+\subsection*{sys\_fsys\_close -- 0xFFE07C}
 Close a file that was previously opened, given its channel number. If there were writes done on the channel, those writes will be committed to the block device holding the file.
 
 \bigskip
@@ -95,7 +95,7 @@ Returns & 0 on success, negative number on failure \\ \hline
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_opendir -- 0xFFE07C}
+\subsection*{sys\_fsys\_opendir -- 0xFFE080}
 Open a directory on a volume for reading, given its path.
 Returns a directory handle number on success, or a negative number on failure.
 
@@ -139,7 +139,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_closedir -- 0xFFE080}
+\subsection*{sys\_fsys\_closedir -- 0xFFE084}
 Close a previously open directory, given its number.
 
 \bigskip
@@ -163,7 +163,7 @@ Returns & 0 on success, negative number on error \\ \hline
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_readdir -- 0xFFE084}
+\subsection*{sys\_fsys\_readdir -- 0xFFE088}
 Given the number of an open directory, and a buffer in which to place the data, fetch the file information of the next directory entry. (See below for details on the \verb+file_info+ structure.)
 
 Returns 0 on success, a negative number on failure.
@@ -234,7 +234,7 @@ file_info:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_findfirst -- 0xFFE088}
+\subsection*{sys\_fsys\_findfirst -- 0xFFE08C}
 Given the path to a directory to search, a search pattern, and a pointer to a \verb+file_info+ structure, return the first entry in the directory that matches the pattern.
 
 Returns a directory handle on success, a negative number if there is an error
@@ -296,7 +296,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_findnext -- 0xFFE08C}
+\subsection*{sys\_fsys\_findnext -- 0xFFE090}
 Given the directory handle for a previously open search (from \verb+sys_fsys_findfirst+), and a \verb+file_info+ structure, fill out the structure with the file information of the next file to match the original search pattern.
 
 Returns 0 on success, a negative number if there is an error
@@ -382,7 +382,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_get\_label -- 0xFFE090}
+\subsection*{sys\_fsys\_get\_label -- 0xFFE094}
 Get the label of a volume.
 
 \bigskip
@@ -429,7 +429,7 @@ label:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_set\_label -- 0xFFE094}
+\subsection*{sys\_fsys\_set\_label -- 0xFFE098}
 Set the label of a volume.
 
 \bigskip
@@ -471,7 +471,7 @@ label:
     .null "FNXSD0"
 \end{verbatim}
 
-\subsection*{sys\_fsys\_mkdir -- 0xFFE098}
+\subsection*{sys\_fsys\_mkdir -- 0xFFE09C}
 Create a directory.
 
 \bigskip
@@ -508,7 +508,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_delete -- 0xFFE09C}
+\subsection*{sys\_fsys\_delete -- 0xFFE0A0}
 Delete a file or directory, given its path. Returns 0 on success, a negative number if there is an error
 
 \bigskip
@@ -544,7 +544,7 @@ path:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_rename -- 0xFFE0A0}
+\subsection*{sys\_fsys\_rename -- 0xFFE0A4}
 Rename a file or directory. Returns 0 on success, a negative number if there is an error
 
 \bigskip
@@ -604,7 +604,7 @@ new_path:
 % Returns & 0 on success, negative number on failure. \\ \hline
 % \end{tabular}
 
-\subsection*{sys\_fsys\_load -- 0xFFE0AC}
+\subsection*{sys\_fsys\_load -- 0xFFE0B0}
 Load a file into memory. This function can either load a file into a specific address provided by the caller,
 or to the loading address specified in the file (for executable files). For executable files, the function will also
 return the starting address specified in the file.
@@ -659,7 +659,7 @@ start:
 \end{verbatim}
 
 
-\subsection*{sys\_fsys\_register\_loader -- 0xFFE0B0}
+\subsection*{sys\_fsys\_register\_loader -- 0xFFE0B4}
 Register a file loader for a binary file type.
 A file loader is a function that takes a channel number for a file to load, a long representing the destination address, and a pointer to a long for the start address of the program. These last two parameters are the same as are provided the \verb+sys_fsys_load+.
 
@@ -685,7 +685,7 @@ Returns & 0 on success, negative number on error \\ \hline
      short result = sys_fsys_register_loader("FOO", foo_loader);
 \end{lstlisting}
 
-\subsection*{sys\_fsys\_stat -- 0xFFE0B4}
+\subsection*{sys\_fsys\_stat -- 0xFFE0B8}
 Check to see if a file is present. The \verb+s_file_info+ structure will be populated if the file is found.
 Returns 0 on success or a negative number on an error.
 
