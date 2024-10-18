@@ -1,4 +1,77 @@
 \section{Interrupt Functions}
+Interrupts in the Toolbox are managed at a device level.
+The F256 includes an interrupt controller which assigns a different interrupt to each device that can raise an interrupt.
+The interrupt controller provides for separate masking and interrupt flags for each device interrupt.
+The Toolbox allows programs to register an interrupt handler for the specific device-level interrupt the program needs to handle.
+That handler is just a regular subroutine (it should not be coded so as to return with an \verb+RTI+ instruction).
+The Toolbox will take care of checking the various interrupt controller registers to determine which interrupts are currently pending
+and will call the associated interrupt handler automatically. The Toolbox will also take care to save register states to avoid interferring
+with the currently running program.
+
+On the F256, interrupts are arranged into three groups, with each interrupt getting a bit within one of the groups in each of the 
+control registers for that group. For instance, the start of frame interrupt (vertical blank interrupt) is the least significant bit of group 0.
+The Foenix Toolbox, on the other hand, assigns a single number to each interrupt and internally maps that number to the appropriate group and bit.
+When enabling or disabling an interrupt or when registering an interrupt handler, it is this internal interrupt number that is used.\footnote{The interrupt
+number assignments may seem arbitrary, but they are actually just inherited from Foenix MCP and the A2560s, where the interrupt number is essentially just
+the group and bit numbers packed into an 8-bit value.}
+
+In addition to controlling interrupts at a device level ({\it e.g.} the serial port interrupt), the Toolbox also has routines to allow a program to
+enable or disable IRQ processing at the CPU level. The \lstinline!int_enable_all!, \lstinline!int_disable_all!, and \lstinline!int_restore_all!,
+functions work at the CPU level and do not affect the mask bits in the F256's interrupt controller. The \lstinline!int_enable!, and \lstinline!int_disable!
+functions work at the level of the individual device interrupt in the interrupt controller.
+
+In some situations, the overhead required by the Toolbox to process interrupts may cause problems.
+If that is the case, there is a way to override the usual processing and hand control over to the interrupt handler earlier.
+There are two 32-bit vectors reserved:
+
+\begin{lstlisting}
+    uint32_t * irq_ram_vector = (uint32_t *)0x00fdec;
+    uint32_t * nmi_ram_vector = (uint32_t *)0x00fdf4;
+\end{lstlisting}
+
+By default, these vectors are set to 0, and they will be ignored by the Toolbox.
+If a program needs to take over the interrupt processing for either the IRQ or the NMI interrupt, it should set the appropriate vector
+to the address of a regular subroutine that will do its own determination of which interrupt needs to be processed.
+The Toolbox will check these vectors after saving all the registers that need to be restored after the interrupt is processed.
+If it sees a non-zero value in the vector, it will call the handler.
+
+NOTE: both the low-level override handler and the standard interrupt handlers should be far call subroutines that take no argument and returns no value.
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}{|c|c||c|l|} \hline 
+            \multicolumn{2}{|c||}{Hardware} & Toolbox & \\
+            Group & Bit & Number & Purpose \\ \hline
+            \multirow{8}{*}{0} & 0x01 & 0x00 & Start of frame \\ \cline{2-4}
+                & 0x02 & 0x01 & Start of line \\ \cline{2-4}
+                & 0x04 & 0x10 & PS/2 Keyboard \\ \cline{2-4}
+                & 0x08 & 0x12 & PS/2 Mouse \\ \cline{2-4}
+                & 0x10 & 0x18 & Timer 0 \\ \cline{2-4}
+                & 0x20 & 0x19 & Timer 1 \\ \cline{2-4}
+                & 0x40 & ---  & Reserved \\ \cline{2-4}
+                & 0x80 & 0x06 & External Expansion \\ \hline\hline
+
+            \multirow{8}{*}{1} & 0x01 & 0x13 & Serial Port \\ \cline{2-4}
+                & 0x02 & ---  & Reserved \\ \cline{2-4}
+                & 0x04 & ---  & Reserved \\ \cline{2-4}
+                & 0x08 & ---  & Reserved \\ \cline{2-4}
+                & 0x10 & 0x1F & Real Time Clock \\ \cline{2-4}
+                & 0x20 & 0x1D & VIA 0 \\ \cline{2-4}
+                & 0x40 & 0x1E & VIA 1 (F256K) \\ \cline{2-4}
+                & 0x80 & 0x22 & SD Card \\ \hline\hline
+
+            \multirow{8}{*}{2} & 0x01 & --- & Reserved \\ \cline{2-4}
+                & 0x02 & --- & Reserved \\ \cline{2-4}
+                & 0x04 & --- & Reserved \\ \cline{2-4}
+                & 0x08 & --- & Reserved \\ \cline{2-4}
+                & 0x10 & --- & Reserved \\ \cline{2-4}
+                & 0x20 & --- & Reserved \\ \cline{2-4}
+                & 0x40 & --- & Reserved \\ \cline{2-4}
+                & 0x80 & 0x21 & SD Card Inserted \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{F256 Interrupt Assignments}
+\end{table}
 
 \subsection*{sys\_int\_enable\_all -- 0xFFE004}
 This function enables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking.
