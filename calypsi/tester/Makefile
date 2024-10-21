@@ -15,10 +15,10 @@ ifeq ($(UNIT),F256K)
 	CPU=w65816
 	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
 	SRCS_FOR_UNIT=
-	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large
+	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target=f256
 
 	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=clib-lc-ld.a --rtattr printf=medium --target=f256 # C256/f256-flash.scm 
+		LDFLAGS_FOR_UNIT=clib-lc-ld.a --rtattr printf=medium  # --target=f256 C256/f256-flash.scm 
 	else
 		LDFLAGS_FOR_UNIT=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --target=f256
 	endif
@@ -41,7 +41,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file tester.map
 endif
 
-SRCS = tester.c parser.c test_cmds.c header.s stubs.c bindings.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
+SRCS = tester.c tester_gram.tab.c lex.yy.c test_cmds.c header.s stubs.c bindings.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = 
@@ -59,13 +59,13 @@ tester.s37: $(OBJS) $(LIBS)
 %.o: %.s
 	$(AS) $(ASFLAGS) -o $@ $^
 
-lex.yy.c: test_flex.l
-	flex test_flex.l
+lex.yy.c: tester_scan.l
+	flex tester_scan.l
 
-test_gram.tab.c: test_gram.y
-	bison -d test_gram.y
+tester_gram.tab.c: tester_gram.y
+	bison -d tester_gram.y
 
 # Clean up after a build
 clean:
-	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.map
+	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.map *.yy.c *.tab.c *.tab.h
 
