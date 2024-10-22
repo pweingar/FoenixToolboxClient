@@ -41,7 +41,7 @@ else
 	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file tester.map
 endif
 
-SRCS = tester.c tester_gram.tab.c lex.yy.c test_cmds.c header.s stubs.c bindings.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
+SRCS = tester.c test_cmds.c header.s stubs.c bindings.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = 
