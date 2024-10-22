@@ -1,7 +1,7 @@
 \chapter{Devices}
 Devices on the Foenix computers fall into one of three main categories: channel devices, block devices, and files (which are really special purpose channel devices).
 
-\section*{Channel Devices}
+\section{Channel Devices}
 Channel devices are predominantly sequential, byte oriented devices. They are essentially byte streams. A program can read or write a series of bytes from or to the device. A channel can have the notion of a ``cursor'' which represents the point where a read or write will happen. Examples of channel devices include the console, the serial ports, and files.
 
 Currently, the only fully supported channel devices are open files, the keyboard, and the screen. In the future, there should be full support for the serial ports, the parallel port, and the MIDI ports. Channel devices are assigned as shown in table~\ref{tab:chan_devs}:
@@ -24,7 +24,7 @@ Currently, the only fully supported channel devices are open files, the keyboard
 
 By default, channel 0 is open automatically to device 0 (the console) at boot time.
 
-\section*{Block Devices}
+\section{Block Devices}
 Block devices organize their data into blocks of bytes. A block may be read from or written to a block device, and blocks maybe accessed in any order desired. The F256K2e comes with two block devices: the internal and external SD cards (see table~\ref{tab:block_devs}).
 
 \begin{table}
@@ -39,7 +39,7 @@ Block devices organize their data into blocks of bytes. A block may be read from
     \label{tab:block_devs}
 \end{table}
 
-\section*{File Channels}
+\section{File Channels}
 Files represent a special channel pseudo-device. Although files are stored on block devices, they may be open as file channels, which may be accessed like a channel device. There is a special file channel driver, which converts channel reads and writes on a file to the appropriate block calls. Access to these file channels is managed in part through the file system calls listed below.
 
 \subsection*{Paths}

@@ -210,3 +210,157 @@ struct s_sys_info {
     uint16_t screens;         		/* How many screens are on this computer */
 };
 \end{lstlisting}
+
+\subsection*{Model and CPU IDs}
+The numbers listed in table~\ref{tbl:fnx_model_ids} are used to distinguish between the different models of Foenix computers.
+The numbers listed in table~\ref{tbl:fnx_cpu_ids} are used to distinguish between the different CPUs.
+Both the machine and CPU IDs are also used by the Toolbox's makefile.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Model & Number \\ \hline\hline
+			C256 FMX & 0 \\ \hline
+			C256 U & 1 \\ \hline
+			C256 GenX & 4 \\ \hline
+			C256 U+ & 5 \\ \hline
+			A2560 U+ & 6 \\ \hline
+			A2560 X & 7 \\ \hline
+			A2560 U & 9 \\ \hline
+			A2560 K & 11 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Foenix Model IDs}
+	\label{tbl:fnx_model_ids}
+\end{table}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			CPU & Number \\ \hline\hline
+			M68SEC000 & 0 \\ \hline
+			M68020 & 1 \\ \hline
+			M68EC020 & 2 \\ \hline
+			M68030 & 3 \\ \hline
+			M68EC030 & 4 \\ \hline
+			M68040 & 5 \\ \hline
+			M68040V & 6 \\ \hline
+			ME68EC040 & 7 \\ \hline
+			i486DX 50 & 8 \\ \hline
+			i468DX 60 & 9 \\ \hline
+			i468DX4 & 10 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Foenix CPU IDs}
+	\label{tbl:fnx_cpu_ids}
+\end{table}
+
+\subsection*{Screen Information}
+There are several structures defined to provide information about the text screen and to be used in controlling various aspects
+of the text screen.
+
+\begin{lstlisting}
+/*
+ * Structure to specify the size of a rectangle
+ */
+typedef struct s_extent {
+    short width;        /**< The width of the region */
+    short height;       /**< The height of the region */
+} t_extent, *p_extent;
+
+/*
+ * Structure to specify the location of a point on the screen
+ */
+typedef struct s_point {
+    short x;                /**< The column of the point */
+    short y;                /**< The row of the point */
+} t_point, *p_point;
+
+/*
+ * Structure to specify a rectangular area on the screen
+ */
+typedef struct s_rect {
+    t_point origin;         /**< The upper-left corner of the rectangle */
+    t_extent size;          /**< The size of the rectangle */
+} t_rect, *p_rect;
+\end{lstlisting}
+
+The capabiliites of the screen are listed in the text capabilities structure.
+These capabilities include the supported display modes on the screen (as a bitfield, the values of which are listed in table~\ref{tbl:fnx_screen_modes}),
+the number and sizes of the fonts supported, and the display resolutions supported.
+
+\begin{lstlisting}
+/*
+* Structure to specify the capabilities of a screen's text driver
+*/
+typedef struct s_txt_capabilities {
+    short number;               /**< The unique ID of the screen */
+    short supported_modes;      /**< The display modes supported on this screen */
+    short font_size_count;      /**< The number of supported font sizes */
+    p_extent font_sizes;        /**< Pointer to a list of t_extent listing all supported font sizes (in pixels) */
+    short resolution_count;     /**< The number of supported display resolutions */
+    p_extent resolutions;       /**< Pointer to a list of t_extent listing all supported display resolutions (in pixels) */
+} t_txt_capabilities, *p_txt_capabilities;
+\end{lstlisting}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Mode & Number \\ \hline\hline
+			\verb+TXT_MODE_TEXT+ & 0x0001 \\ \hline
+			\verb+TXT_MODE_BITMAP+ & 0x0002 \\ \hline
+			\verb+TXT_MODE_SPRITE+ & 0x0004 \\ \hline
+			\verb+TXT_MODE_TILE+ & 0x0008 \\ \hline
+			\verb+TXT_MODE_SLEEP+ & 0x0010 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Toolbox Screen Mode Flags}
+	\label{tbl:fnx_screen_modes}
+\end{table}
+
+\section*{Foenix Executable File Formats}
+
+\subsection*{PGX File Format}
+The PGX file format is the simplest executable format. It is similar in scale to MS-DOS's COM format, or the Commodore PRG format.
+It consists of a single segment of data to be loaded to a specific address, where that address is also the starting address.
+PGX starts with a header to identify the file and the starting address:
+
+\begin{itemize}
+	\item The first three bytes are the ASCII codes for ``PGX''. 
+    \item The fourth byte is the CPU and version identification byte.
+	Bits 0 through 3 represent the CPU code, and bits 4 through 7 represent the version of PGX supported.
+	At the moment, there is just version 0. The CPU code can be 1 for the WDC65816, or 2 for the M680x0.
+    \item The next four bytes (that is, bytes 4 through 7) are the address of the destination, in big-endian format (most significant byte first).
+	This address is both the address of the location in which to load the first byte of the data and is also the starting address for the file.
+\end{itemize}
+
+All bytes after the header are the contents of the file to be loaded into memory.
+
+\subsection*{PGZ File Format}
+The PGZ is a more complex format that supports multiple loadable segments, but is still to be loaded in set locations in memory.
+The first byte of the file is a file signature and also a version tag.
+
+If the first byte is an upper case Z, the file is a 24-bit PGZ file (i.e. all addresses and sizes specified in the file are 24-bits).
+If the file is a lower case Z, the file is a 32-bit PGZ file (all address and sizes are 32-bits in length).
+Note that all addresses and sizes are in little endian format (that is, least significant byte first).
+
+After the initial byte, the remainder of the PGZ file consists of segments, one after the other. Each segment consists of two or three fields,
+shown in table~\ref{tbl:pgz_file_segments}.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+			Field &	Size & Description \\ \hline\hline
+			\verb+address+ & 3 (“Z”) or 4 (“z”) bytes & The target address for this segment \\ \hline
+			\verb+size+ & 3 (“Z”) or 4 (“z”) bytes & The number of bytes in the data field \\ \hline
+			\verb+data+ & \verb+size+ bytes & The data to be loaded [optional] \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{PGZ File Segments}
+	\label{tbl:pgz_file_segments}
+\end{table}
+
+For a particular segment, if the size field is 0, there will be no bytes in the data field,
+and the segment specifies the starting address of the entire program.
+At least one such segment must be present in the PGZ file for it to be executable.
+If more than one is present, the last one will be the one used to specify the starting address.
