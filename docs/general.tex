@@ -1,7 +1,8 @@
 \section{General Functions}
 
 \subsection*{sys\_proc\_exit -- 0xFFE000}
-This function ends the currently running program and returns control to the kernel. It takes a single short argument, which is the result code that should be passed back to the kernel. This function does not return.
+This function ends the currently running program and returns control to the kernel. It takes a single short argument,
+which is the result code that should be passed back to the kernel. This function does not return.
 
 \bigskip
 
@@ -77,7 +78,8 @@ argv:
 
 
 \subsection*{sys\_get\_info -- 0xFFE020}
-Fill out a structure with information about the computer. This information includes the model, the CPU, the amount of memory, versions of the board and FPGAs, and what optional equipment is installed.
+Fill out a structure with information about the computer. This information includes the model, the CPU, the amount of memory,
+versions of the board and FPGAs, and what optional equipment is installed.
 .
 There is no return value.
 
@@ -106,7 +108,8 @@ info & pointer to a s\_sys\_info structure to fill out \\ \hline
 
 
 \subsection*{sys\_mem\_get\_ramtop -- 0xFFE0BC}
-Return the limit of accessible system RAM. The address returned is the first byte of memory that user programs may not access. User programs may use any byte from the bottom of system RAM to RAMTOP - 1.
+Return the limit of accessible system RAM. The address returned is the first byte of memory that user programs may not access.
+User programs may use any byte from the bottom of system RAM to RAMTOP - 1.
 
 \bigskip
 
@@ -117,8 +120,10 @@ Returns & the address of the first byte of reserved system RAM \\ \hline
 
 
 \subsection*{sys\_mem\_reserve -- 0xFFE0C0}
-Reserve a block of memory from the top of system RAM. This call will reduce the value returned by \lstinline|sys_get_ramtop| and will create a block of memory that user programs and the kernel will not change.
-The current user program can load into that memory any code or data it needs to protect after it has quit (for instance, a terminate-stay-resident code block). \lstinline|sys_mem_reserve| returns the address of the first byte of the block reserved.
+Reserve a block of memory from the top of system RAM.
+This call will reduce the value returned by \lstinline|sys_get_ramtop| and will create a block of memory that user programs and the kernel will not change.
+The current user program can load into that memory any code or data it needs to protect after it has quit
+(for instance, a terminate-stay-resident code block). \lstinline|sys_mem_reserve| returns the address of the first byte of the block reserved.
 
 NOTE: a reserved block cannot be returned to general use accept by restarting the system.
 
@@ -148,7 +153,8 @@ Returns & address of the first byte of the reserved block \\ \hline
 \subsection*{sys\_time\_jiffies -- 0xFFE0C4}
 Returns the number of ``jiffies'' since system startup.
 
-A jiffy is 1/60 second. This clock counts the number of jiffies since the last system startup, but it is not terribly precise. This counter should be sufficient for providing timeouts and wait delays on a fairly course level, but it should not be used when precision is required.
+A jiffy is 1/60 second. This clock counts the number of jiffies since the last system startup, but it is not terribly precise.
+This counter should be sufficient for providing timeouts and wait delays on a fairly course level, but it should not be used when precision is required.
 
 \bigskip
 
@@ -226,7 +232,8 @@ time & pointer to a t\_time record in which to put the current time \\ \hline
 \end{verbatim}
 
 \subsection*{sys\_kbd\_scancode -- 0xFFE0D0}
-Returns the next keyboard scan code (0 if none are available). Note that reading a scan code directly removes it from being used by the regular console code and may cause some surprising behavior if you combine the two.
+Returns the next keyboard scan code (0 if none are available).
+Note that reading a scan code directly removes it from being used by the regular console code and may cause some surprising behavior if you combine the two.
 
 See below for details about Foenix scan codes.
 
@@ -257,7 +264,8 @@ wait:
 
 
 \subsection*{sys\_kbd\_layout -- 0xFFE0D8}
-Sets the keyboard translation tables converting from scan codes to 8-bit character codes. The table provided is copied by the kernel into its own area of memory, so the memory used in the calling program's memory space may be reused after this call.
+Sets the keyboard translation tables converting from scan codes to 8-bit character codes.
+The table provided is copied by the kernel into its own area of memory, so the memory used in the calling program's memory space may be reused after this call.
 
 Takes a pointer to the new translation tables (see below for details). If this pointer is 0, Foenix Toolbox will reset its translation tables to their defaults.
 

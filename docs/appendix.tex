@@ -101,7 +101,7 @@ Note that this feature is always on in the current system. Also, in the followin
 
 % The “#” in the sequences above represent an optional modifier code. If SHIFT, CTRL, or ALT is pressed with the key, the number sign is replaced with a decimal number representing a bitfield of the modifier keys, followed by a semicolon. The bit values are: SHIFT = 1, ALT = 2, CTRL = 4, and OS (Foenix) = 8. 
 
-\section{Keyboard Scancodes}
+\section{Keyboard Scan codes}
 Foenix Toolbox uses the same Foenix scan codes that the original 65816 Foenix kernel and Foenix/MCP used.
 These scan codes are derived from the standard ``set 1'' scan codes with modifications to get the scan codes to fit within a single byte.
 The base scan codes for a US QWERTY keyboard are listed below.
@@ -138,7 +138,7 @@ Second, the break scan code of 0xB9 will be sent when the key is released.
             0x0F & TAB      & S         & V         & F5       & KP1    &        &         \\ \hline
         \end{tabular}
     \end{center}
-    \caption{Keyboard Scancodes}
+    \caption{Keyboard Scan codes}
     \label{tbl:kbd_scancodes}
 \end{table}
 
@@ -214,7 +214,7 @@ struct s_sys_info {
 \subsection*{Model and CPU IDs}
 The numbers listed in table~\ref{tbl:fnx_model_ids} are used to distinguish between the different models of Foenix computers.
 The numbers listed in table~\ref{tbl:fnx_cpu_ids} are used to distinguish between the different CPUs.
-Both the machine and CPU IDs are also used by the Toolbox's makefile.
+Both the machine and CPU IDs are also used by the Toolbox's make file.
 
 \begin{table}
 	\begin{center}
@@ -285,8 +285,8 @@ typedef struct s_rect {
 } t_rect, *p_rect;
 \end{lstlisting}
 
-The capabiliites of the screen are listed in the text capabilities structure.
-These capabilities include the supported display modes on the screen (as a bitfield, the values of which are listed in table~\ref{tbl:fnx_screen_modes}),
+The capabilities of the screen are listed in the text capabilities structure.
+These capabilities include the supported display modes on the screen (as a bit field, the values of which are listed in table~\ref{tbl:fnx_screen_modes}),
 the number and sizes of the fonts supported, and the display resolutions supported.
 
 \begin{lstlisting}
@@ -342,7 +342,7 @@ The first byte of the file is a file signature and also a version tag.
 
 If the first byte is an upper case Z, the file is a 24-bit PGZ file (i.e. all addresses and sizes specified in the file are 24-bits).
 If the file is a lower case Z, the file is a 32-bit PGZ file (all address and sizes are 32-bits in length).
-Note that all addresses and sizes are in little endian format (that is, least significant byte first).
+Note that all addresses and sizes are in little-endian format (that is, least-significant byte first).
 
 After the initial byte, the remainder of the PGZ file consists of segments, one after the other. Each segment consists of two or three fields,
 shown in table~\ref{tbl:pgz_file_segments}.
@@ -373,7 +373,7 @@ sections not currently used but which may be used in the future), and areas spec
 programs (called out in boldface).
 
 Roughly speaking, all bank 0 RAM below 0x00:D000 and all RAM from bank 1 through bank 6 are free for user programs
-to do with as they wish. The stack is preallocated and shared between the user programs and the toolbox functions.
+to do with as they wish. The stack is allocated and shared between the user programs and the toolbox functions.
 If a program wishes to move the stack for some reason, this should be safe enough to do, although some Toolbox functions
 might fail, if they use too much of the stack the user program reserved.
 
@@ -397,7 +397,7 @@ work correctly.
 			{\tt 0x01:0000 - 0x06:FFFF} & {\bf User Memory} \\ \hline	
 			{\tt 0x07:0000 - 0x07:FFFF} & Toolbox Memory \\ \hline
 			{\tt 0xFC:0000 - 0xFF:DFFF} & Toolbox Firmware \\ \hline
-			{\tt 0xFF:E000 - 0xFF:FEFF} & Toolbox Jumptable \\ \hline
+			{\tt 0xFF:E000 - 0xFF:FEFF} & Toolbox Jump Table \\ \hline
 			{\tt 0xFF:FF00 - 0xFF:FFFF} & Toolbox Bootstrap and Vectors \\ \hline
 		\end{tabular}
 	\end{center}

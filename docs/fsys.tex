@@ -15,7 +15,7 @@ Attempt to open a file in the file system for reading or writing.
 Returns a channel number associated with the file.
 If the returned number is negative, there was an error opening the file.
 
-The mode parameter indicates how the file should be open and is a bitfield, where each bit has a separate meaning:
+The mode parameter indicates how the file should be open and is a bit field, where each bit has a separate meaning:
 \begin{itemize}
     \item 0x01: Read
     \item 0x02: Write
@@ -71,7 +71,8 @@ path:
 
 
 \subsection*{sys\_fsys\_close -- 0xFFE07C}
-Close a file that was previously opened, given its channel number. If there were writes done on the channel, those writes will be committed to the block device holding the file.
+Close a file that was previously opened, given its channel number.
+If there were writes done on the channel, those writes will be committed to the block device holding the file.
 
 \bigskip
 
@@ -164,7 +165,8 @@ Returns & 0 on success, negative number on error \\ \hline
 
 
 \subsection*{sys\_fsys\_readdir -- 0xFFE088}
-Given the number of an open directory, and a buffer in which to place the data, fetch the file information of the next directory entry. (See below for details on the \verb+file_info+ structure.)
+Given the number of an open directory, and a buffer in which to place the data, fetch the file information of the next directory entry.
+(See below for details on the \verb+file_info+ structure.)
 
 Returns 0 on success, a negative number on failure.
 
@@ -235,7 +237,8 @@ file_info:
 
 
 \subsection*{sys\_fsys\_findfirst -- 0xFFE08C}
-Given the path to a directory to search, a search pattern, and a pointer to a \verb+file_info+ structure, return the first entry in the directory that matches the pattern.
+Given the path to a directory to search, a search pattern, and a pointer to a \verb+file_info+ structure,
+return the first entry in the directory that matches the pattern.
 
 Returns a directory handle on success, a negative number if there is an error
 
@@ -297,7 +300,8 @@ path:
 
 
 \subsection*{sys\_fsys\_findnext -- 0xFFE090}
-Given the directory handle for a previously open search (from \verb+sys_fsys_findfirst+), and a \verb+file_info+ structure, fill out the structure with the file information of the next file to match the original search pattern.
+Given the directory handle for a previously open search (from \verb+sys_fsys_findfirst+), and a \verb+file_info+ structure,
+fill out the structure with the file information of the next file to match the original search pattern.
 
 Returns 0 on success, a negative number if there is an error
 
@@ -661,9 +665,10 @@ start:
 
 \subsection*{sys\_fsys\_register\_loader -- 0xFFE0B4}
 Register a file loader for a binary file type.
-A file loader is a function that takes a channel number for a file to load, a long representing the destination address, and a pointer to a long for the start address of the program. These last two parameters are the same as are provided the \verb+sys_fsys_load+.
+A file loader is a function that takes a channel number for a file to load, a long representing the destination address,
+and a pointer to a long for the start address of the program. These last two parameters are the same as are provided the \verb+sys_fsys_load+.
 
-On success, returns 0. It there is an error in registering the loader, returns a negative number.
+On success, returns 0. If there is an error in registering the loader, returns a negative number.
 
 \bigskip
 

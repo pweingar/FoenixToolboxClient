@@ -10,12 +10,14 @@ on the screen where printing will go, leaving other portions of the text screen 
 
 The F256 supports only the one screen, but the text system functions were written with support for multiple screens in mind.
 All text functions take a screen number. For the F256 as of the time of this writing, that number will always be 0.
-If at some point, an F256 with multi-screen support is created or a graphics expansion card is produced, that additional
+If at some point, an F256 with multiscreen support is created or a graphics expansion card is produced, that additional
 screen could be supported by the Toolbox with the addition of a text mode driver.
 
 \subsection*{sys\_txt\_get\_capabilities  -- 0xFFE0E4}
 Gets the description of a screen's capabilities.
-The capabilities are returned as a pointer to a structure that provides a bitfield of the various modes supported, a listing of different font sizes that are supported (the F256 currently supports only 8 by 8 fonts), and a listing of different screen resolutions supported by the screen.
+The capabilities are returned as a pointer to a structure that provides a bit field of the various modes supported,
+a listing of different font sizes that are supported (the F256 currently supports only 8 by 8 fonts),
+and a listing of different screen resolutions supported by the screen.
 
 \begin{lstlisting}
 	struct s_txt_capabilities {
@@ -46,7 +48,9 @@ Set the display mode of the screen. There are five basic modes supported which a
     \item \verb+TXT_MODE_SLEEP+---Puts the monitor in power-saving mode by turning off the sync signals
 \end{itemize}
 
-These flags are returned in the \verb+supported_modes+ field of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+, and they may be combined to mix the different rendering engines if supported by the hardware (for instance, \verb+TXT_MODE_TEXT | TXT_MODE_SPRITE+ would combine text and sprites). \verb+TXT_MODE_SLEEP+ will over-ride all the other modes.
+These flags are returned in the \verb+supported_modes+ field of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+,
+and they may be combined to mix the different rendering engines if supported by the hardware
+(for instance, \verb+TXT_MODE_TEXT | TXT_MODE_SPRITE+ would combine text and sprites). \verb+TXT_MODE_SLEEP+ will over-ride all the other modes.
 
 The result of turning off all the mode flags is system dependent, but should result in a blank screen without putting the monitor into sleep mode.
 
@@ -57,7 +61,7 @@ Returns 0 on success, any other number means the mode was invalid for the screen
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_txt_set_mode(short screen, short mode)! \\ \hline
 screen & the number of the text device \\ \hline
-mode & a bitfield of desired display mode options \\ \hline
+mode & a bit field of desired display mode options \\ \hline
 Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
 \end{tabular}
 
@@ -90,7 +94,7 @@ The width and height must match one of the resolutions listed in the screen's ca
 Prototype & \lstinline!short sys_txt_set_resolution(short screen, short width, short height)! \\ \hline
 screen & the number of the text device \\ \hline
 width & the desired horizontal resolution in pixels \\ \hline
-height & the desired veritical resolution in pixels \\ \hline
+height & the desired vertical resolution in pixels \\ \hline
 Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
 \end{tabular}
 
@@ -116,7 +120,9 @@ Returns & 0 on success, any other number means the mode is invalid for the scree
 \subsection*{sys\_txt\_set\_xy -- 0xFFE0F0}
 Sets the position of the cursor on the screen.
 
-The call takes the number of the screen and the character row (y) and column (x) of the cursor. The cursor positions are specified relative to the origin of the current region set on the screen, so (0, 0) will be the origin of the region, (0, 1) will be the character position right below the origin, and so on.
+The call takes the number of the screen and the character row (y) and column (x) of the cursor.
+The cursor positions are specified relative to the origin of the current region set on the screen, so (0, 0)
+will be the origin of the region, (0, 1) will be the character position right below the origin, and so on.
 
 \bigskip
 
@@ -184,7 +190,8 @@ position:
 \subsection*{sys\_txt\_get\_region -- 0xFFE0F8}
 Gets the origin and size of the rectangle describing the current region.
 
-The call takes a screen number and a pointer to a \verb+t_rect+ structure to fill out with the current information. Returns 0 on success, any other number is an error.
+The call takes a screen number and a pointer to a \verb+t_rect+ structure to fill out with the current information.
+Returns 0 on success, any other number is an error.
 
 \bigskip
 
@@ -220,7 +227,10 @@ region:
 
 
 \subsection*{sys\_txt\_set\_region -- 0xFFE0FC}
-Sets the rectangular region of the screen that will be used for all subsequent printing, scrolling, and filling. This call takes the screen number and a pointer to a \verb+t_rect+ structure containing the origin (upper-left corner) and the size (width and height) of the region. These values are specified in character cells, with (0, 0) being the upper-left corner of the screen. If the size of the rectangle is 0 (width = height = 0), then the region will be the full screen.
+Sets the rectangular region of the screen that will be used for all subsequent printing, scrolling, and filling.
+This call takes the screen number and a pointer to a \verb+t_rect+ structure containing the origin (upper-left corner) and the size (width and height)
+of the region. These values are specified in character cells, with (0, 0) being the upper-left corner of the screen.
+If the size of the rectangle is 0 (width = height = 0), then the region will be the full screen.
 
 Returns 0 on success, any other number is an error.
 
@@ -273,8 +283,8 @@ Returns 0 on success, any other number is an error.
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_color(short screen, unsigned char foreground, unsigned char background)! \\ \hline
 screen & the number of the text device \\ \hline
-foreground & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
-background & the Text LUT index of the new current background color (0 - 15) \\ \hline
+foreground & the Text LUT index of the new current foreground color (0 -- 15) \\ \hline
+background & the Text LUT index of the new current background color (0 -- 15) \\ \hline
 \end{tabular}
 
 \subsubsection*{Example: C}
@@ -410,7 +420,8 @@ is\_visible & TRUE if the cursor should be visible, FALSE (0) otherwise \\ \hlin
 
 
 \subsection*{sys\_txt\_set\_font -- 0xFFE110}
-Set the font to be used in text mode on the screen. Takes the screen number, the width and height of the characters (in pixels), and a pointer to the actual font data. Returns 0 on success, any other number means the screen is invalid, or the font size is invalid.
+Set the font to be used in text mode on the screen. Takes the screen number, the width and height of the characters (in pixels),
+and a pointer to the actual font data. Returns 0 on success, any other number means the screen is invalid, or the font size is invalid.
 
 NOTE: the font size must be listed in the \verb+font_sizes field+ of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+.
 
@@ -455,7 +466,9 @@ data & pointer to the raw font data to be loaded \\ \hline
 
 
 \subsection*{sys\_txt\_setsizes -- 0xFFE0EC}
-Sets the text screen device driver to the current screen geometry, based on the display resolution and border size. If a program changes the border or display resolution on its own but still needs to use the Toolbox console or text routines to display text, it should call this function to have the Toolbox recalculate the screen geometry.
+Sets the text screen device driver to the current screen geometry, based on the display resolution and border size.
+If a program changes the border or display resolution on its own but still needs to use the Toolbox console or text routines to display text,
+it should call this function to have the Toolbox recalculate the screen geometry.
 
 \bigskip
 
@@ -479,7 +492,8 @@ screen & the number of the text device \\ \hline
 \subsection*{sys\_txt\_get\_sizes -- 0xFFE114}
 Gets the size of the screen in total pixels (not taking the border into consideration) and visible characters (taking the border into account).
 
-NOTE: \verb+text_size+ and \verb+pixel_size+ can be null (0), in which case that structure will not be filled out, so you do not have to provide a \verb+t_extent+ for a measurement you do not need.
+NOTE: \verb+text_size+ and \verb+pixel_size+ can be null (0), in which case that structure will not be filled out,
+so you do not have to provide a \verb+t_extent+ for a measurement you do not need.
 
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_get_sizes(short screen, p_extent text_size, p_extent pixel_size)! \\ \hline
@@ -523,7 +537,10 @@ text_matrix:                ; Holds size of screen in characters
 
 
 \subsection*{sys\_txt\_set\_border -- 0xFFE118}
-Sets the size of the border around the screen. Takes the number of the screen and the size of the border width and height. In this context, width is the width of the left and right borders taken separately, and height is the height of the top and bottom borders. So if width is 8 and height is 16, 32 lines will be taken up by the top and bottom borders together, and 16 columns will be taken up by the left and right borders.
+Sets the size of the border around the screen. Takes the number of the screen and the size of the border width and height.
+In this context, width is the width of the left and right borders taken separately, and height is the height of the top and bottom borders.
+So if width is 8 and height is 16, 32 lines will be taken up by the top and bottom borders together,
+and 16 columns will be taken up by the left and right borders.
 
 NOTE: if the width and height of the borders are 0, the border will be disabled.
 
@@ -532,8 +549,8 @@ NOTE: if the width and height of the borders are 0, the border will be disabled.
 \begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_txt_set_border(short screen, short width, short height)! \\ \hline
 screen & the number of the text device \\ \hline
-width & the horizontal size of one side of the border (0 - 32 pixels) \\ \hline
-height & the vertical size of one side of the border (0 - 32 pixels) \\ \hline
+width & the horizontal size of one side of the border (0 -- 32 pixels) \\ \hline
+height & the vertical size of one side of the border (0 -- 32 pixels) \\ \hline
 \end{tabular}
 
 \subsubsection*{Example: C}

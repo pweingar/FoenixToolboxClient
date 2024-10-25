@@ -21,9 +21,13 @@ the ``ON'' position. The Toolbox will scan each of the boot sources in a priorit
 \end{enumerate}
 
 For the two SD cards, the Toolbox is looking for an executable file in the root directory of the card---either \verb+fnxboot.pgx+
-or \verb+fnxboot.pgz+. For RAM, flash memory, an the expansion cartridge, the Toolbox is looking for a special header that contains a signature and specifies the starting address to run. For RAM, the entire memory from 0x00:0000 to the top of system RAM will be checked on 8KB alignment boundaries (that is, the header should be at 0x00:0000, or 0x00:2000, or 0x00:4000, {\it etc.}). For the cartridge, it should be at the start of the cartridge's memory (0xF4:0000). For the flash memory, it should be at the start of the flash memory (0xF8:0000)\footnote{This may change in future.}.
+or \verb+fnxboot.pgz+. For RAM, flash memory, and the expansion cartridge, the Toolbox is looking for a special header that contains
+a signature and specifies the starting address to run.
+In RAM, the entire memory from 0x00:0000 to the top of system RAM will be checked on 8KB alignment boundaries
+(that is, the header should be at 0x00:0000, or 0x00:2000, or 0x00:4000, {\it etc.}).\
+For the cartridge, it should be at the start of the cartridge's memory (0xF4:0000). For the flash memory, it should be at the start of the flash memory (0xF8:0000)\footnote{This may change in future.}.
 
-The header for the executable code can be describe with this C structure:
+The header for the executable code can be described with this C structure:
 \begin{lstlisting}
 	struct boot_record_s {
 		char signature1;				// Needs to be $f8

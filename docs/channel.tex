@@ -7,7 +7,7 @@ MIDI devices, and files open on SD cards.
 In the future, there may be other channel devices as well ({\it e.g.} network streams).
 Some channel devices can provide support for higher level functionality.
 As an example, the console channel device provides support for printing ANSI terminal codes to the screen
-and for reading certain keypresses back as ANSI escape sequences (for instance, function key presses).
+and for reading certain key presses back as ANSI escape sequences (for instance, function key presses).
 
 \subsection*{sys\_chan\_read\_b -- 0xFFE028}
 Read a single character from the channel. Returns the character, or 0 if none are available.
@@ -319,7 +319,8 @@ Returns & 0 on success, any negative number is an error code \\ \hline
 
 
 \subsection*{sys\_chan\_open -- 0xFFE04C}
-Open a channel device for reading or writing given: the number of the device, the path to the resource on the device (if any), and the access mode. The access mode is a bitfield:
+Open a channel device for reading or writing given: the number of the device, the path to the resource on the device (if any), and the access mode.
+The access mode is a bit field:
 \begin{itemize}
     \item 0x01: Open for reading
     \item 0x02: Open for writing
@@ -385,7 +386,9 @@ Returns & nothing useful \\ \hline
 \end{verbatim}
 
 \subsection*{sys\_chan\_swap -- 0xFFE054}
-Swaps two channels, given their IDs. If before the call, channel ID \verb+channel1+ refers to the file ``hello.txt'', and channel ID \verb+channel2+ is the console, then after the call, \verb+channel1+ is the console, and \verb+channel2+ is the open file ``hello.txt''. Any context for the channels is preserved (for instance, the position of the file cursor in an open file).
+Swaps two channels, given their IDs. If before the call, channel ID \verb+channel1+ refers to the file ``hello.txt'',
+and channel ID \verb+channel2+ is the console, then after the call, \verb+channel1+ is the console, and \verb+channel2+ is
+the open file ``hello.txt''. Any context for the channels is preserved (for instance, the position of the file cursor in an open file).
 
 \bigskip
 

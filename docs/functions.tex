@@ -12,11 +12,19 @@ All Toolbox functions are long call functions ({\it i.e.} using the \verb+JSL+ a
 	\item The caller is responsible for removing the parameters from the stack (if any) after the call returns.
 \end{itemize}
 
-Furthermore, Toolbox functions are written so as to save the direct page and data bank registers of the caller and to restore them before returning to the caller. This means that a user program can do whatever it likes with the direct page and data bank registers, and the Toolbox will not interfere with those settings. The Toolbox does use those registers itself, but so long as the user program does not alter the Toolbox's RAM blocks (see the memory maps), there should be no interference between the two.
+Furthermore, Toolbox functions are written to save the direct page and data bank registers of the caller and to restore them before returning to the caller.
+This means that a user program can do whatever it likes with the direct page and data bank registers,
+and the Toolbox will not interfere with those settings. The Toolbox does use those registers itself,
+but so long as the user program does not alter the Toolbox's RAM blocks (see the memory maps), there should be no interference between the two.
 
-The Toolbox functions are accessed through a jumptable located in the F256's flash memory, starting at 0xFFE000. Each entry is four bytes long, and the address of each function is called out in their detailed descriptions below.
+The Toolbox functions are accessed through a jump table located in the F256's flash memory, starting at 0xFFE000.
+Each entry is four bytes long, and the address of each function is called out in their detailed descriptions below.
 
-NOTE: Calypsi's ``simple call'' convention is not the fastest way to pass parameters to functions, and it is not Calypsi's only calling convention. There is also a calling convention that uses pseudo-registers in the direct page to pass parameters. Unfortunately, the rules for which parameter goes where in direct page are rather involved. While that convention is preferable when Calypsi is the only compiler involved, the Toolbox needs to allow for other development tools to be used. The stack based convention is more likely to be supported by other compilers. So speed was traded for broader compatibility.
+NOTE: Calypsi's ``simple call'' convention is not the fastest way to pass parameters to functions, and it is not Calypsi's only calling convention.
+There is also a calling convention that uses pseudo-registers in the direct page to pass parameters.
+Unfortunately, the rules for which parameter goes where in direct page are rather involved.
+While that convention is preferable when Calypsi is the only compiler involved, the Toolbox needs to allow for other development tools to be used.
+The stack based convention is more likely to be supported by other compilers. So speed was traded for broader compatibility.
 
 \input{general.tex}
 \input{channel.tex}

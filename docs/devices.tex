@@ -43,7 +43,10 @@ Block devices organize their data into blocks of bytes. A block may be read from
 Files represent a special channel pseudo-device. Although files are stored on block devices, they may be open as file channels, which may be accessed like a channel device. There is a special file channel driver, which converts channel reads and writes on a file to the appropriate block calls. Access to these file channels is managed in part through the file system calls listed below.
 
 \subsection*{Paths}
-File and directory names follow the Unix style path conventions. That is, the forward slash (/) is used as a separator, and drives are treated as directories (``/sd'', ``/hd'', {\it etc.}). FAT32 long file names are supported, but not Unicode characters. Special path names ``.'' and ``..''. are supported to specify a path relative to the current path. Example paths are:
+File and directory names follow the Unix style path conventions.
+That is, the forward slash (/) is used as a separator, and drives are treated as directories (``/sd'', ``/hd'', {\it etc.}).
+FAT32 long file names are supported, but not Unicode characters.
+The special path names ``.'' and ``..'' are supported to specify a path relative to the current path. Example paths are:
 
 \begin{verbatim}
     /sd0/hello.txt
