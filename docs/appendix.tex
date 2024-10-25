@@ -318,7 +318,7 @@ typedef struct s_txt_capabilities {
 	\label{tbl:fnx_screen_modes}
 \end{table}
 
-\section*{Foenix Executable File Formats}
+\section{Foenix Executable File Formats}
 
 \subsection*{PGX File Format}
 The PGX file format is the simplest executable format. It is similar in scale to MS-DOS's COM format, or the Commodore PRG format.
@@ -364,3 +364,43 @@ For a particular segment, if the size field is 0, there will be no bytes in the 
 and the segment specifies the starting address of the entire program.
 At least one such segment must be present in the PGZ file for it to be executable.
 If more than one is present, the last one will be the one used to specify the starting address.
+
+\section{Memory Map}
+The Foenix Toolbox uses different sections of both flash and RAM memory to provide its functions.
+The memory map in table~\ref{tbl:memory_map} marks the major areas and pseudo-registers for the Toolbox.
+The table also marks out sections of memory that are reserved for future use by the Toolbox (that is,
+sections not currently used but which may be used in the future), and areas specifically reserved for user
+programs (called out in boldface).
+
+Roughly speaking, all bank 0 RAM below 0x00:D000 and all RAM from bank 1 through bank 6 are free for user programs
+to do with as they wish. The stack is preallocated and shared between the user programs and the toolbox functions.
+If a program wishes to move the stack for some reason, this should be safe enough to do, although some Toolbox functions
+might fail, if they use too much of the stack the user program reserved.
+
+Of course, if a program takes complete control over the F256 and does not require any toolbox functions, the program is free
+to do whatever it requires with memory. This memory map is only of importance for programs that need the Toolbox functions to
+work correctly.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Address & Purpose \\ \hline\hline
+			{\tt 0x00:0000 - 0x00:CFFF} & {\bf User Memory} \\ \hline
+			{\tt 0x00:D000 - 0x00:DFFF} & Toolbox Low Memory \\ \hline
+			{\tt 0x00:E000 - 0x00:EDEA} & Reserved \\ \hline
+			{\tt 0x00:EDEB - 0x00:FDEB} & Stack \\ \hline
+			{\tt 0x00:FDEC - 0x00:FDEF} & User IRQ Vector \\ \hline
+			{\tt 0x00:FDF4 - 0x00:FDF7} & User NMI Vector \\ \hline
+			{\tt 0x00:FDF8 - 0x00:FDFF} & Reserved \\ \hline
+			{\tt 0x00:FE00 - 0x00:FEFF} & Toolbox Direct Page \\ \hline
+			{\tt 0x00:FF00 - 0x00:FFFF} & Toolbox Bootstrap Shadow \\ \hline
+			{\tt 0x01:0000 - 0x06:FFFF} & {\bf User Memory} \\ \hline	
+			{\tt 0x07:0000 - 0x07:FFFF} & Toolbox Memory \\ \hline
+			{\tt 0xFC:0000 - 0xFF:DFFF} & Toolbox Firmware \\ \hline
+			{\tt 0xFF:E000 - 0xFF:FEFF} & Toolbox Jumptable \\ \hline
+			{\tt 0xFF:FF00 - 0xFF:FFFF} & Toolbox Bootstrap and Vectors \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Toolbox Memory Usage}
+	\label{tbl:memory_map}
+\end{table}

@@ -22,3 +22,5 @@
 \contentsline {section}{\numberline {6.2}ANSI Terminal Codes}{59}{}%
 \contentsline {section}{\numberline {6.3}Keyboard Scancodes}{62}{}%
 \contentsline {section}{\numberline {6.4}Useful Data Structures}{62}{}%
+\contentsline {section}{\numberline {6.5}Foenix Executable File Formats}{66}{}%
+\contentsline {section}{\numberline {6.6}Memory Map}{66}{}%
