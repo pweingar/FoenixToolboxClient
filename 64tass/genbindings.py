@@ -281,5 +281,13 @@ with open(sys.argv[2], "r") as addresses:
 # Create the bindings file with the relevant information
 #
 with open("bindings.s", "w") as bindings:
+	bindings.write(";;;\n")
+	bindings.write(";;; Foenix Toolbox functions\n")
+	bindings.write(";;;\n")
+	bindings.write("\n")
+	bindings.write("tb			.namespace\n")
+
 	for func in functions:
 		func.emit_asm(bindings)
+
+	bindings.write("			.endn\n")

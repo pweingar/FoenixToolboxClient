@@ -1,3 +1,8 @@
+;;;
+;;; Foenix Toolbox functions
+;;;
+
+tb			.namespace
 
 ;
 ; extern SYSTEMCALL void sys_proc_exit(short result);
@@ -926,3 +931,4 @@ txt_print        .namespace
 message         .dword ?      ; the ASCII Z string to print
                 .endv
                 .endn
+			.endn
