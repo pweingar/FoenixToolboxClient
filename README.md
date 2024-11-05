@@ -8,4 +8,6 @@ This project contains various files to help create client programs to run using 
 
 * [calypsi](calypsi) -- [WIP] Contains include files, Makefiles, and a simple library for C programs compiled under the Calypsi C compiler. If you want to write programs in C using Calypsi, this is the place to start.
 
+* [resources](resources) -- Possibly useful resource files
+
 * [docs](docs) -- [WIP] Contains the programmer's manual.
