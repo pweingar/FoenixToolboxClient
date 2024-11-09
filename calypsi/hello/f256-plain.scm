@@ -1,20 +1,19 @@
 (define memories
-  '((memory LoMem
-      (address (#xa000 . #xcfff))
+  '((memory Vector (address (#xffe4 . #xffff)))
+
+    (memory DirectPage (address (#x000000 . #x0000ff)) (section registers))
+
+    (memory LoMem
+      (address (#x005000 . #x00bfff))
       (type ANY))
 
-    (memory Vector (address (#xffe4 . #xffff)))
+    (memory HeaderMem
+      (address (#x010000 . #x01001f))
+      (section (header)))
 
-    (memory Banks
-      (address (#x10000 . #x1ffff))
-      (type ANY)
-      (section (header #x10000))
-      (placement-group far-bits (section ANY))
-      (placement-group far-nobits (section zfar zdata)))
-
-    (memory DirectPage
-      (address (#x000100 . #x0001ff))
-          (section (registers ztiny)))
+    (memory HiMem
+      (address (#x010020 . #x01ffff))
+	  (type ANY))
 
     (block stack (size #x1000))
     (block heap (size #x1000))

@@ -1,10 +1,10 @@
 ###############################################################################
 #                                                                             #
 # Calypsi linker for 65816                                        version 5.6 #
-#                                                       31/Oct/2024  10:30:58 #
-# Command line: f256-plain.scm clib-lc-ld.a --rtattr printf=medium            #
-#               --target=f256 --list-file toolbox.map --output-format s37     #
-#               -o hello.s37 hello.o header.o ../lib/toolbox.a                #
+#                                                       09/Nov/2024  10:33:06 #
+# Command line: f256-plain.scm --target=f256 --hosted --list-file             #
+#               toolbox.map --output-format s37 -o hello.s37 hello.o          #
+#               header.o ../lib/toolbox.a                                     #
 #                                                                             #
 ###############################################################################
 
@@ -14,15 +14,19 @@
 #                  #
 ####################
 
-Name             Range         Size    Used    Checksum  Largest unallocated
-----------------------------------------------------------------------------
-DirectPage       000100-0001ff 000100    7.8%  none      0000ec
-LoMem            00a000-00cfff 003000   67.4%  none      000fa6
-  > LoMem-code   00a000-00a059 00005a  100.0%  none      none
-  > LoMem-nobits 00a05a-00c059 002000  100.0%  none      000fa6
-Vector           00ffe4-00ffff 00001c    7.1%  none      000018
-Banks            010000-01ffff 010000    6.7%  none      00eeec
-  > far-nobits   010015-0101f7 0001e3  100.0%  none      00fe08
+Name                 Range         Size    Used    Checksum  Largest unallocated
+--------------------------------------------------------------------------------
+DirectPage           000000-0000ff 000100    7.8%  none      0000ec
+LoMem                005000-00bfff 007000   28.9%  none      004f98
+  > LoMem-cbits      005000-005009 00000a  100.0%  none      none
+  > LoMem-code       00500a-005067 00005e  100.0%  none      none
+  > LoMem-nobits     005068-007067 002000  100.0%  none      004f98
+Vector               00ffe4-00ffff 00001c    7.1%  none      000018
+HeaderMem            010000-01001f 000020   65.6%  none      00000b
+HiMem                010020-01ffff 00ffe0   13.1%  none      00de68
+  > HiMem-far-bits   010020-01005e 00003f  100.0%  none      none
+  > HiMem-far-nobits 01005f-010241 0001e3  100.0%  none      none
+  > HiMem-farcode    010242-012197 001f56  100.0%  none      00de68
 
 
 ####################
@@ -31,19 +35,19 @@ Banks            010000-01ffff 010000    6.7%  none      00eeec
 #                  #
 ####################
 
-Name            Range          Size    Memory       Fragments
--------------------------------------------------------------
-registers       000100-000113  000014  DirectPage   1
-code            00a000-00a059  00005a  LoMem-code   4
-heap            00a05a-00b059  001000  LoMem-nobits 1
-stack           00b05a-00c059  001000  LoMem-nobits 1
-reset           00fffc-00fffd  000002  Vector       1
-header          010000-010014  000015  Banks        1
-data_init_table 010015-01001e  00000a  Banks        1
-farcode         0101f8-011095  000e9e  Banks        28
-cfar            011096-0110ad  000018  Banks        1
-farcode         0110ae-011113  000066  Banks        9
-zfar            010015-0101f7  0001e3  far-nobits   11
+Name            Range          Size    Memory           Fragments
+-----------------------------------------------------------------
+registers       000000-000013  000014  DirectPage       1
+data_init_table 005000-005009  00000a  LoMem-cbits      1
+code            00500a-005067  00005e  LoMem-code       5
+heap            005068-006067  001000  LoMem-nobits     1
+stack           006068-007067  001000  LoMem-nobits     1
+reset           00fffc-00fffd  000002  Vector           1
+header          010000-010014  000015  HeaderMem        1
+cfar            010020-010046  000027  HiMem-far-bits   3
+switch          010047-01005e  000018  HiMem-far-bits   1
+zfar            01005f-010241  0001e3  HiMem-far-nobits 11
+farcode         010242-012197  001f56  HiMem-farcode    62
 
 
 ###################
@@ -52,29 +56,29 @@ zfar            010015-0101f7  0001e3  far-nobits   11
 #                 #
 ###################
 
-Name           Address range  Key
+Name               Address range  Key
 ----------------------------------------------------------------------
-Banks          010000-01ffff  TEXT, RODATA and DATA
-  > (header 010000)
-  > farcode, data_init_table and cfar
-  far-bits     010000-01ffff  
-    > ANY
-  far-nobits   010000-01ffff  
+DirectPage         000000-0000ff  Plain
+  > registers
+HeaderMem          010000-01001f  
+  > header
+HiMem              010020-01ffff  Near
+  HiMem-far-bits   010020-01ffff  Far and RODATA
+    > data_init_table, cfar and switch
+  HiMem-far-nobits 010020-01ffff  Far and BSS
     > zfar
-    > zdata
-  Banks-NoBits 010000-01ffff  BSS
-DirectPage     000100-0001ff  Plain
-  > registers and ztiny
-LoMem          00a000-00cfff  Plain
-  LoMem-nobits 00a000-00cfff  Plain and BSS
+  HiMem-farcode    010020-01ffff  FarFunction and TEXT
+    > farcode
+LoMem              005000-00bfff  Plain
+  LoMem-nobits     005000-00bfff  Plain and BSS
     > stack
     > heap
-  LoMem-bits   00a000-00cfff  Plain and DATA
-  LoMem-cbits  00a000-00cfff  Plain and RODATA
+  LoMem-bits       005000-00bfff  Plain and DATA
+  LoMem-cbits      005000-00bfff  Plain and RODATA
     > data_init_table
-  LoMem-code   00a000-00cfff  PlainFunction and TEXT
+  LoMem-code       005000-00bfff  PlainFunction and TEXT
     > code
-Vector         00ffe4-00ffff  Plain
+Vector             00ffe4-00ffff  Plain
   > (reset 00fffc)
 
 Name  Size   Align
@@ -93,66 +97,89 @@ _NearBaseAddress LoMem      000000
 #              #
 ################
 
-Unit Filename          Archive
-----------------------------------------
-  0  hello.o           -
+Unit Filename             Archive
+-------------------------------------------
+  0  hello.o              -
           >  cfar    000018
-          >  farcode 00002d
-  1  header.o          -
+          >  farcode 000010
+  1  header.o             -
           >  header 000015
-  6  cstartup.o        f256-lc-ld-f256.a
+  5  cstartup.o           f256-lc-ld-f256.a
           # picked based on cstartup=f256 (default for Foenix F256 board support)
-          >  code    00005a
+          >  code    00005e
           >  farcode 000001
           >  reset   000002
-  7  exit.o            clib-lc-ld.a
+  7  exit.o               clib-lc-ld-f256.a
           # picked based on exit=stdexit (built-in default)
           >  farcode 000056
-  9  controlFlow.o     clib-lc-ld.a
+  9  controlFlow.o        clib-lc-ld-f256.a
           >  farcode 00000e
- 10  pseudoRegisters.o clib-lc-ld.a
+ 10  pseudoRegisters.o    clib-lc-ld-f256.a
           >  registers 000014
- 11  atexit.o          clib-lc-ld.a
+ 11  atexit.o             clib-lc-ld-f256.a
           >  farcode 00002d
           >  zfar    000082
- 12  exitC99.o         clib-lc-ld.a
+ 12  exitC99.o            clib-lc-ld-f256.a
           >  farcode 000005
- 13  defaultExit.o     clib-lc-ld.a
+ 13  defaultExit.o        clib-lc-ld-f256.a
           >  farcode 000001
- 15  streamlist.o      clib-lc-ld.a
+ 15  streamlist.o         clib-lc-ld-f256.a
           >  farcode 0000ad
           >  zfar    000063
- 16  stubs.o           toolbox.a
+ 16  stubs.o              toolbox.a
           >  farcode 0003ae
           >  zfar    000062
- 18  integer.o         clib-lc-ld.a
-          >  farcode 000046
- 20  errno.o           clib-lc-ld.a
+ 18  integer.o            clib-lc-ld-f256.a
+          >  farcode 00008f
+ 20  errno.o              clib-lc-ld-f256.a
           >  zfar 000002
- 21  lib_fclose.o      clib-lc-ld.a
+ 21  lib_fclose.o         clib-lc-ld-f256.a
           >  farcode 0001d9
- 22  free.o            clib-lc-ld.a
+ 22  free.o               clib-lc-ld-f256.a
           >  farcode 00016b
- 23  addfreechunk.o    clib-lc-ld.a
+ 23  addfreechunk.o       clib-lc-ld-f256.a
           >  farcode 000113
- 24  heap_initialize.o clib-lc-ld.a
+ 24  heap_initialize.o    clib-lc-ld-f256.a
           >  farcode 000203
           >  zfar    00009a
- 25  lib_memset.o      clib-lc-ld.a
+ 25  lib_memset.o         clib-lc-ld-f256.a
           >  farcode 000046
- 26  lib_strlen.o      clib-lc-ld.a
-          >  farcode 000019
- 27  lib_fflush.o      clib-lc-ld.a
-          >  farcode 000038
- 28  lib_libfflush.o   clib-lc-ld.a
+ 26  lib_printf.o         clib-lc-ld-f256.a
+          >  farcode 000041
+ 27  lib_vfprintf.o       clib-lc-ld-f256.a
+          >  farcode 000058
+ 31  __vsprintf_reduced.o clib-lc-ld-f256.a
+          # picked based on printf=reduced (format string requirement determined by compiler)
+          >  cfar    00000f
+          >  farcode 000acc
+          >  switch  000018
+ 32  lib_stdoutstream.o   clib-lc-ld-f256.a
+          >  farcode 0000ca
+ 33  lib_libnoflush.o     clib-lc-ld-f256.a
+          >  farcode 000004
+ 34  lib_fputc.o          clib-lc-ld-f256.a
+          >  farcode 00007f
+ 35  lib_libfflush.o      clib-lc-ld-f256.a
           >  farcode 000169
- 30  lib_libflushall.o clib-lc-ld.a
+ 37  lib_libfwrite.o      clib-lc-ld-f256.a
+          >  farcode 0001bf
+ 38  lib_rdflush.o        clib-lc-ld-f256.a
+          >  farcode 0000aa
+ 39  lib_fseek.o          clib-lc-ld-f256.a
+          >  farcode 00007b
+ 41  lib_wrflush.o        clib-lc-ld-f256.a
+          >  farcode 000021
+ 42  lib_fflush.o         clib-lc-ld-f256.a
+          >  farcode 000038
+ 43  lib_libflushall.o    clib-lc-ld-f256.a
           >  farcode 000078
- 31  initialize.o      clib-lc-ld.a
+ 44  initialize.o         clib-lc-ld-f256.a
           # picked based on initialize=normal (built-in default)
           >  farcode 000083
- 33  lib_memcpy.o      clib-lc-ld.a
+ 46  lib_memcpy.o         clib-lc-ld-f256.a
           >  farcode 000049
+ 47  vswitch16.o          clib-lc-ld-f256.a
+          >  farcode 000088
 
 ###################
 #                 #
@@ -160,253 +187,311 @@ Unit Filename          Archive
 #                 #
 ###################
 
+_Dp in section 'registers'  placed at address 000000-000013 of size 000014
+(pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Defines:
+        _Vfp = 000010
+        _Dp = 000000
+    Referenced from:
+        main (hello.o unit 0 section index 2)
+        __program_start (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 2)
+        __data_initialization_needed (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 3)
+        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 5)
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+        _JmpIndLong (controlFlow.o (from clib-lc-ld-f256.a) unit 9 section index 3)
+        atexit (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 4)
+        (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+        ... 49 more
+
 signature in section 'header'  placed at address 010000-010014 of size 000015
 (header.o unit 1 section index 2)
     References:
-        __program_start in (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 2)
+        __program_start in (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 2)
 
-Section 'data_init_table'  placed at address 010015-01001e of size 00000a
-(linker generated)
+g_nullstring in section 'cfar'  placed at address 010020-010026 of size 000007
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 2)
 
-fclose in section 'farcode'  placed at address 0101f8-0103b6 of size 0001bf
-(lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
+`_StringLiteral_*float*` in section 'cfar'
+ placed at address 010027-01002e of size 000008
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 3)
     Defines:
-        fclose = 0101f8
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __close in (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 2)
-        __global_streams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 6)
-        errno in (errno.o (from clib-lc-ld.a) unit 20 section index 2)
-        fflush in (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
-        free in (free.o (from clib-lc-ld.a) unit 22 section index 2)
-
-free in section 'farcode'  placed at address 0103b7-010516 of size 000160
-(free.o (from clib-lc-ld.a) unit 22 section index 2)
-    Defines:
-        free = 0103b7
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __addfreechunk in (addfreechunk.o (from clib-lc-ld.a) unit 23 section index 3)
-        __default_heap in (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 5)
+        `_StringLiteral_*float*` = 010027
     Referenced from:
-        fclose (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
+        (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
 
-__lib_fflush in section 'farcode'
- placed at address 010517-010669 of size 000153
-(lib_libfflush.o (from clib-lc-ld.a) unit 28 section index 2)
+`_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` in section 'cfar'
+ placed at address 01002f-010046 of size 000018
+(hello.o unit 0 section index 3)
     Defines:
-        __lib_fflush = 010517
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Stub_write in (stubs.o (from toolbox.a) unit 16 section index 10)
+        `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` = 01002f
     Referenced from:
-        fflush (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
+        main (hello.o unit 0 section index 2)
 
-__heap_initialize in section 'farcode'
- placed at address 01066a-01077d of size 000114
-(heap_initialize.o (from clib-lc-ld.a) unit 24 section index 3)
+`?L191` in section 'switch'  placed at address 010047-01005e of size 000018
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 17)
+
+file_descriptor in section 'zfar'
+ placed at address 01005f-0100be of size 000060
+(stubs.o (from toolbox.a) unit 16 section index 3)
+
+is_inited in section 'zfar'  placed at address 0100bf-0100c0 of size 000002
+(stubs.o (from toolbox.a) unit 16 section index 2)
+
+__default_heap in section 'zfar'
+ placed at address 0100c1-01015a of size 00009a
+(heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 5)
     Defines:
-        __heap_initialize = 01066a
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __heap_addregion in (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 2)
-        memset in (lib_memset.o (from clib-lc-ld.a) unit 25 section index 2)
+        __default_heap = 0100c1
     Referenced from:
-        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 5)
+        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 5)
+        free (free.o (from clib-lc-ld-f256.a) unit 22 section index 2)
 
-_Stub_open in section 'farcode'  placed at address 01077e-01086f of size 0000f2
-(stubs.o (from toolbox.a) unit 16 section index 6)
+__atexit_index in section 'zfar'
+ placed at address 01015b-01015c of size 000002
+(atexit.o (from clib-lc-ld-f256.a) unit 11 section index 3)
     Defines:
-        _Stub_open = 01077e
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-        errno in (errno.o (from clib-lc-ld.a) unit 20 section index 2)
-        sys_fsys_open in (bindings.o (from toolbox.a) unit 19 section index 65521)
-
-__addfreechunk in section 'farcode'
- placed at address 010870-010950 of size 0000e1
-(addfreechunk.o (from clib-lc-ld.a) unit 23 section index 3)
-    Defines:
-        __addfreechunk = 010870
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __size2ndx in (addfreechunk.o (from clib-lc-ld.a) unit 23 section index 2)
+        __atexit_index = 01015b
     Referenced from:
-        free (free.o (from clib-lc-ld.a) unit 22 section index 2)
-        __heap_addregion (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 2)
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+        atexit (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 4)
 
-__heap_addregion in section 'farcode'
- placed at address 010951-010a30 of size 0000e0
-(heap_initialize.o (from clib-lc-ld.a) unit 24 section index 2)
+__atexit in section 'zfar'  placed at address 01015d-0101dc of size 000080
+(atexit.o (from clib-lc-ld-f256.a) unit 11 section index 2)
     Defines:
-        __heap_addregion = 010951
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __addfreechunk in (addfreechunk.o (from clib-lc-ld.a) unit 23 section index 3)
+        __atexit = 01015d
     Referenced from:
-        __heap_initialize (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 3)
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+        atexit (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 4)
 
-init in section 'farcode'  placed at address 010a31-010af7 of size 0000c7
-(stubs.o (from toolbox.a) unit 16 section index 4)
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-
-__initialize_sections in section 'farcode'
- placed at address 010af8-010b7a of size 000083
-(initialize.o (from clib-lc-ld.a) unit 31 section index 2)
+__global_streams in section 'zfar'
+ placed at address 0101dd-0101f0 of size 000014
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
     Defines:
-        __initialize_sections = 010af8
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        memcpy in (lib_memcpy.o (from clib-lc-ld.a) unit 33 section index 2)
-        memset in (lib_memset.o (from clib-lc-ld.a) unit 25 section index 2)
+        __global_streams = 0101dd
     Referenced from:
-        __data_initialization_needed (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 3)
+        (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+        __initialize_global_streams (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 8)
+        fclose (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
+        printf (lib_printf.o (from clib-lc-ld-f256.a) unit 26 section index 2)
+        fflush (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
 
-__lib_flushall in section 'farcode'
- placed at address 010b7b-010bf2 of size 000078
-(lib_libflushall.o (from clib-lc-ld.a) unit 30 section index 2)
+__stderr in section 'zfar'  placed at address 0101f1-010209 of size 000019
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 5)
+
+__stdout in section 'zfar'  placed at address 01020a-010222 of size 000019
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 4)
+
+__stdin in section 'zfar'  placed at address 010223-01023b of size 000019
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 3)
+
+_ExitCloseStreams in section 'zfar'
+ placed at address 01023c-01023f of size 000004
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 2)
     Defines:
-        __lib_flushall = 010b7b
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        fflush in (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
+        _ExitCloseStreams = 01023c
     Referenced from:
-        fflush (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+        __initialize_global_streams (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 8)
 
-_Stub_close in section 'farcode'
- placed at address 010bf3-010c68 of size 000076
-(stubs.o (from toolbox.a) unit 16 section index 7)
+errno in section 'zfar'  placed at address 010240-010241 of size 000002
+(errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
     Defines:
-        _Stub_close = 010bf3
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-        sys_fsys_close in (bindings.o (from toolbox.a) unit 19 section index 65521)
+        errno = 010240
     Referenced from:
-        (streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
-        __close (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 2)
+        _Stub_open (stubs.o (from toolbox.a) unit 16 section index 6)
+        fclose (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
+        (lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 2)
+        __lib_fwrite (lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
+        __lib_rdflush (lib_rdflush.o (from clib-lc-ld-f256.a) unit 38 section index 2)
+        fflush (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
 
-_Stub_read in section 'farcode'  placed at address 010c69-010cd9 of size 000071
-(stubs.o (from toolbox.a) unit 16 section index 9)
+_Stub_exit in section 'farcode'  placed at address 010242-010242 of size 000001
+(defaultExit.o (from clib-lc-ld-f256.a) unit 13 section index 2)
     Defines:
-        _Stub_read = 010c69
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-        sys_chan_read in (bindings.o (from toolbox.a) unit 19 section index 65521)
+        _Stub_exit = 010242
+    Referenced from:
+        _Exit (exitC99.o (from clib-lc-ld-f256.a) unit 12 section index 2)
 
-closeAllStreams in section 'farcode'
- placed at address 010cda-010d35 of size 00005c
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
+__low_level_init in section 'farcode'
+ placed at address 010243-010243 of size 000001
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 8)
+    Defines:
+        __low_level_init = 010243
+    Referenced from:
+        __program_start (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 2)
+
+__lib_noflush in section 'farcode'
+ placed at address 010244-010247 of size 000004
+(lib_libnoflush.o (from clib-lc-ld-f256.a) unit 33 section index 2)
+    Defines:
+        __lib_noflush = 010244
+    Referenced from:
+        __lib_stdoutstream (lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 4)
+
+_Exit in section 'farcode'  placed at address 010248-01024c of size 000005
+(exitC99.o (from clib-lc-ld-f256.a) unit 12 section index 2)
+    Defines:
+        _Exit = 010248
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Stub_exit in (defaultExit.o (from clib-lc-ld-f256.a) unit 13 section index 2)
+    Referenced from:
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+
+`?L275` in section 'farcode'  placed at address 01024d-010254 of size 000008
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 12)
+
+`?L270` in section 'farcode'  placed at address 010255-01025d of size 000009
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 7)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L277` in section 'farcode'  placed at address 01025e-010266 of size 000009
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 14)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L278` in section 'farcode'  placed at address 010267-01026f of size 000009
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 15)
+
+`?L23` in section 'farcode'  placed at address 010270-01027a of size 00000b
+(free.o (from clib-lc-ld-f256.a) unit 22 section index 3)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L274` in section 'farcode'  placed at address 01027b-010285 of size 00000b
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 11)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L279` in section 'farcode'  placed at address 010286-010290 of size 00000b
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 16)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+_Stub_lseek in section 'farcode'
+ placed at address 010291-01029b of size 00000b
+(stubs.o (from toolbox.a) unit 16 section index 8)
+    Defines:
+        _Stub_lseek = 010291
+    Referenced from:
+        fseek (lib_fseek.o (from clib-lc-ld-f256.a) unit 39 section index 2)
+
+_JmpIndLong in section 'farcode'
+ placed at address 01029c-0102a9 of size 00000e
+(controlFlow.o (from clib-lc-ld-f256.a) unit 9 section index 3)
+    Defines:
+        _JmpIndLong = 01029c
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Referenced from:
+        exit (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
+        (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
+
+`?L273` in section 'farcode'  placed at address 0102aa-0102b7 of size 00000e
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 10)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L23` in section 'farcode'  placed at address 0102b8-0102c6 of size 00000f
+(heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 4)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L272` in section 'farcode'  placed at address 0102c7-0102d5 of size 00000f
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 9)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L276` in section 'farcode'  placed at address 0102d6-0102e4 of size 00000f
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 13)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+main in section 'farcode'  placed at address 0102e5-0102f4 of size 000010
+(hello.o unit 0 section index 2)
+    Defines:
+        main = 0102e5
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` in (hello.o unit 0 section index 3)
+        printf in (lib_printf.o (from clib-lc-ld-f256.a) unit 26 section index 2)
+    Referenced from:
+        (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 6)
+
+`?L271` in section 'farcode'  placed at address 0102f5-010308 of size 000014
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 8)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+`?L37` in section 'farcode'  placed at address 010309-01031e of size 000016
+(lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 3)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+
+__close in section 'farcode'  placed at address 01031f-010338 of size 00001a
+(lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 2)
+    Defines:
+        __close = 01031f
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
         _Stub_close in (stubs.o (from toolbox.a) unit 16 section index 7)
-        __close in (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 2)
-        __global_streams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 6)
-        fflush in (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
-
-`?L15` in section 'farcode'  placed at address 010d36-010d8b of size 000056
-(stubs.o (from toolbox.a) unit 16 section index 5)
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-
-exit in section 'farcode'  placed at address 010d8c-010de1 of size 000056
-(exit.o (from clib-lc-ld.a) unit 7 section index 2)
-    Defines:
-        exit = 010d8c
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Exit in (exitC99.o (from clib-lc-ld.a) unit 12 section index 2)
-        _ExitCloseStreams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 2)
-        _JmpIndLong in (controlFlow.o (from clib-lc-ld.a) unit 9 section index 3)
-        __atexit in (atexit.o (from clib-lc-ld.a) unit 11 section index 2)
-        __atexit_index in (atexit.o (from clib-lc-ld.a) unit 11 section index 3)
     Referenced from:
-        (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 6)
+        (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+        fclose (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
 
-_Stub_write in section 'farcode'
- placed at address 010de2-010e34 of size 000053
-(stubs.o (from toolbox.a) unit 16 section index 10)
-    Defines:
-        _Stub_write = 010de2
+stdoutstream_flush in section 'farcode'
+ placed at address 010339-010353 of size 00001b
+(lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 3)
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        _Mul16 in (integer.o (from clib-lc-ld.a) unit 18 section index 2)
-        sys_chan_write in (bindings.o (from toolbox.a) unit 19 section index 65521)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __lib_fflush in (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+
+__lib_vsprintf in section 'farcode'
+ placed at address 010354-010371 of size 00001e
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 6)
+    Defines:
+        __lib_vsprintf = 010354
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
     Referenced from:
-        __lib_fflush (lib_libfflush.o (from clib-lc-ld.a) unit 28 section index 2)
+        vfprintf (lib_vfprintf.o (from clib-lc-ld-f256.a) unit 27 section index 2)
+        (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
 
-__initialize_global_streams in section 'farcode'
- placed at address 010e35-010e85 of size 000051
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 8)
+_Stub_remove in section 'farcode'
+ placed at address 010372-010390 of size 00001f
+(stubs.o (from toolbox.a) unit 16 section index 12)
     Defines:
-        __initialize_global_streams = 010e35
+        _Stub_remove = 010372
     References:
-        _ExitCloseStreams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 2)
-        __global_streams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 6)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        sys_fsys_delete in (bindings.o (from toolbox.a) unit 19 section index 65521)
 
-memcpy in section 'farcode'  placed at address 010e86-010ece of size 000049
-(lib_memcpy.o (from clib-lc-ld.a) unit 33 section index 2)
+__lib_wrflush in section 'farcode'
+ placed at address 010391-0103b1 of size 000021
+(lib_wrflush.o (from clib-lc-ld-f256.a) unit 41 section index 2)
     Defines:
-        memcpy = 010e86
+        __lib_wrflush = 010391
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __lib_fflush in (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
     Referenced from:
-        __initialize_sections (initialize.o (from clib-lc-ld.a) unit 31 section index 2)
+        fseek (lib_fseek.o (from clib-lc-ld-f256.a) unit 39 section index 2)
 
-memset in section 'farcode'  placed at address 010ecf-010f14 of size 000046
-(lib_memset.o (from clib-lc-ld.a) unit 25 section index 2)
+atexit in section 'farcode'  placed at address 0103b2-0103de of size 00002d
+(atexit.o (from clib-lc-ld-f256.a) unit 11 section index 4)
     Defines:
-        memset = 010ecf
+        atexit = 0103b2
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-    Referenced from:
-        __heap_initialize (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 3)
-        __initialize_sections (initialize.o (from clib-lc-ld.a) unit 31 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __atexit in (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 2)
+        __atexit_index in (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 3)
 
-_Stub_rename in section 'farcode'
- placed at address 010f15-010f4f of size 00003b
-(stubs.o (from toolbox.a) unit 16 section index 11)
+_Mul16 in section 'farcode'  placed at address 0103df-01040e of size 000030
+(integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
     Defines:
-        _Stub_rename = 010f15
+        _Mul16 = 0103df
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        sys_fsys_rename in (bindings.o (from toolbox.a) unit 19 section index 65521)
-
-fflush in section 'farcode'  placed at address 010f50-010f87 of size 000038
-(lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
-    Defines:
-        fflush = 010f50
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __global_streams in (streamlist.o (from clib-lc-ld.a) unit 15 section index 6)
-        __lib_fflush in (lib_libfflush.o (from clib-lc-ld.a) unit 28 section index 2)
-        __lib_flushall in (lib_libflushall.o (from clib-lc-ld.a) unit 30 section index 2)
-        errno in (errno.o (from clib-lc-ld.a) unit 20 section index 2)
-    Referenced from:
-        (streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
-        fclose (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
-        __lib_flushall (lib_libflushall.o (from clib-lc-ld.a) unit 30 section index 2)
-
-__size2ndx in section 'farcode'  placed at address 010f88-010fb9 of size 000032
-(addfreechunk.o (from clib-lc-ld.a) unit 23 section index 2)
-    Defines:
-        __size2ndx = 010f88
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-    Referenced from:
-        __addfreechunk (addfreechunk.o (from clib-lc-ld.a) unit 23 section index 3)
-
-_Mul16 in section 'farcode'  placed at address 010fba-010fe9 of size 000030
-(integer.o (from clib-lc-ld.a) unit 18 section index 2)
-    Defines:
-        _Mul16 = 010fba
-    References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
     Referenced from:
         (stubs.o (from toolbox.a) unit 16 section index 4)
         (stubs.o (from toolbox.a) unit 16 section index 5)
@@ -415,270 +500,450 @@ _Mul16 in section 'farcode'  placed at address 010fba-010fe9 of size 000030
         _Stub_read (stubs.o (from toolbox.a) unit 16 section index 9)
         _Stub_write (stubs.o (from toolbox.a) unit 16 section index 10)
 
-atexit in section 'farcode'  placed at address 010fea-011016 of size 00002d
-(atexit.o (from clib-lc-ld.a) unit 11 section index 4)
+__size2ndx in section 'farcode'  placed at address 01040f-010440 of size 000032
+(addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 2)
     Defines:
-        atexit = 010fea
+        __size2ndx = 01040f
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __atexit in (atexit.o (from clib-lc-ld.a) unit 11 section index 2)
-        __atexit_index in (atexit.o (from clib-lc-ld.a) unit 11 section index 3)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Referenced from:
+        __addfreechunk (addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 3)
 
-main in section 'farcode'  placed at address 011017-011043 of size 00002d
-(hello.o unit 0 section index 2)
+fflush in section 'farcode'  placed at address 010441-010478 of size 000038
+(lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
     Defines:
-        main = 011017
+        fflush = 010441
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` in (hello.o unit 0 section index 3)
-        strlen in (lib_strlen.o (from clib-lc-ld.a) unit 26 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
+        __lib_fflush in (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+        __lib_flushall in (lib_libflushall.o (from clib-lc-ld-f256.a) unit 43 section index 2)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+    Referenced from:
+        (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+        fclose (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
+        __lib_flushall (lib_libflushall.o (from clib-lc-ld-f256.a) unit 43 section index 2)
+
+_Stub_rename in section 'farcode'
+ placed at address 010479-0104b3 of size 00003b
+(stubs.o (from toolbox.a) unit 16 section index 11)
+    Defines:
+        _Stub_rename = 010479
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        sys_fsys_rename in (bindings.o (from toolbox.a) unit 19 section index 65521)
+
+printf in section 'farcode'  placed at address 0104b4-0104f4 of size 000041
+(lib_printf.o (from clib-lc-ld-f256.a) unit 26 section index 2)
+    Defines:
+        printf = 0104b4
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
+        vfprintf in (lib_vfprintf.o (from clib-lc-ld-f256.a) unit 27 section index 2)
+    Referenced from:
+        main (hello.o unit 0 section index 2)
+
+memset in section 'farcode'  placed at address 0104f5-01053a of size 000046
+(lib_memset.o (from clib-lc-ld-f256.a) unit 25 section index 2)
+    Defines:
+        memset = 0104f5
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Referenced from:
+        __heap_initialize (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 3)
+        __initialize_sections (initialize.o (from clib-lc-ld-f256.a) unit 44 section index 2)
+
+memcpy in section 'farcode'  placed at address 01053b-010583 of size 000049
+(lib_memcpy.o (from clib-lc-ld-f256.a) unit 46 section index 2)
+    Defines:
+        memcpy = 01053b
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Referenced from:
+        __initialize_sections (initialize.o (from clib-lc-ld-f256.a) unit 44 section index 2)
+
+__initialize_global_streams in section 'farcode'
+ placed at address 010584-0105d4 of size 000051
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 8)
+    Defines:
+        __initialize_global_streams = 010584
+    References:
+        _ExitCloseStreams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 2)
+        __global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
+    Referenced from:
+        __call_initialize_global_streams (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 4)
+
+__lib_stdoutstream in section 'farcode'
+ placed at address 0105d5-010626 of size 000052
+(lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 4)
+    Defines:
+        __lib_stdoutstream = 0105d5
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __lib_noflush in (lib_libnoflush.o (from clib-lc-ld-f256.a) unit 33 section index 2)
+    Referenced from:
+        vfprintf (lib_vfprintf.o (from clib-lc-ld-f256.a) unit 27 section index 2)
+
+_Stub_write in section 'farcode'
+ placed at address 010627-010679 of size 000053
+(stubs.o (from toolbox.a) unit 16 section index 10)
+    Defines:
+        _Stub_write = 010627
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
         sys_chan_write in (bindings.o (from toolbox.a) unit 19 section index 65521)
     Referenced from:
-        (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 6)
+        __lib_fflush (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+        __lib_fwrite (lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
 
-_Stub_remove in section 'farcode'
- placed at address 011044-011062 of size 00001f
-(stubs.o (from toolbox.a) unit 16 section index 12)
+exit in section 'farcode'  placed at address 01067a-0106cf of size 000056
+(exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
     Defines:
-        _Stub_remove = 011044
+        exit = 01067a
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        sys_fsys_delete in (bindings.o (from toolbox.a) unit 19 section index 65521)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Exit in (exitC99.o (from clib-lc-ld-f256.a) unit 12 section index 2)
+        _ExitCloseStreams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 2)
+        _JmpIndLong in (controlFlow.o (from clib-lc-ld-f256.a) unit 9 section index 3)
+        __atexit in (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 2)
+        __atexit_index in (atexit.o (from clib-lc-ld-f256.a) unit 11 section index 3)
+    Referenced from:
+        (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 6)
 
-__close in section 'farcode'  placed at address 011063-01107c of size 00001a
-(lib_fclose.o (from clib-lc-ld.a) unit 21 section index 2)
-    Defines:
-        __close = 011063
+`?L14` in section 'farcode'  placed at address 0106d0-010725 of size 000056
+(stubs.o (from toolbox.a) unit 16 section index 5)
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
+
+vfprintf in section 'farcode'  placed at address 010726-01077d of size 000058
+(lib_vfprintf.o (from clib-lc-ld-f256.a) unit 27 section index 2)
+    Defines:
+        vfprintf = 010726
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __lib_stdoutstream in (lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 4)
+        __lib_vsprintf in (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 6)
+    Referenced from:
+        printf (lib_printf.o (from clib-lc-ld-f256.a) unit 26 section index 2)
+
+`?L4` in section 'farcode'  placed at address 01077e-0107d9 of size 00005c
+(streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
         _Stub_close in (stubs.o (from toolbox.a) unit 16 section index 7)
-    Referenced from:
-        (streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
-        fclose (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
+        __close in (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 2)
+        __global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
+        fflush in (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
 
-strlen in section 'farcode'  placed at address 01107d-011095 of size 000019
-(lib_strlen.o (from clib-lc-ld.a) unit 26 section index 2)
-    Defines:
-        strlen = 01107d
+`?L4` in section 'farcode'  placed at address 0107da-010836 of size 00005d
+(lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 2)
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-    Referenced from:
-        main (hello.o unit 0 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+        fputc in (lib_fputc.o (from clib-lc-ld-f256.a) unit 34 section index 2)
 
-`_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` in section 'cfar'
- placed at address 011096-0110ad of size 000018
-(hello.o unit 0 section index 3)
+_UDivMod32 in section 'farcode'  placed at address 010837-01087f of size 000049
+(integer.o (from clib-lc-ld-f256.a) unit 18 section index 11)
     Defines:
-        `_StringLiteral_[72,101,108,108,111,44,32,70,111,101,110,105,120,32,84,111,111,108,98,111,120,33,10]` = 011096
-    Referenced from:
-        main (hello.o unit 0 section index 2)
-
-`?L37` in section 'farcode'  placed at address 0110ae-0110c3 of size 000016
-(lib_libfflush.o (from clib-lc-ld.a) unit 28 section index 3)
+        _UDivMod32 = 010837
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+    Referenced from:
+        __ultoa_invert (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 4)
 
 _DivModSign32 in section 'farcode'
- placed at address 0110c4-0110d9 of size 000016
-(integer.o (from clib-lc-ld.a) unit 18 section index 14)
+ placed at address 010880-010895 of size 000016
+(integer.o (from clib-lc-ld-f256.a) unit 18 section index 14)
     Defines:
-        _DivModSign32 = 0110c4
+        _DivModSign32 = 010880
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
 
-`?L24` in section 'farcode'  placed at address 0110da-0110e8 of size 00000f
-(heap_initialize.o (from clib-lc-ld.a) unit 24 section index 4)
+_Stub_read in section 'farcode'  placed at address 010896-010906 of size 000071
+(stubs.o (from toolbox.a) unit 16 section index 9)
+    Defines:
+        _Stub_read = 010896
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
+        sys_chan_read in (bindings.o (from toolbox.a) unit 19 section index 65521)
 
-_JmpIndLong in section 'farcode'
- placed at address 0110e9-0110f6 of size 00000e
-(controlFlow.o (from clib-lc-ld.a) unit 9 section index 3)
+_Stub_close in section 'farcode'
+ placed at address 010907-01097c of size 000076
+(stubs.o (from toolbox.a) unit 16 section index 7)
     Defines:
-        _JmpIndLong = 0110e9
+        _Stub_close = 010907
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
+        sys_fsys_close in (bindings.o (from toolbox.a) unit 19 section index 65521)
     Referenced from:
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
+        (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 7)
+        __close (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 2)
 
-_Stub_lseek in section 'farcode'
- placed at address 0110f7-011101 of size 00000b
-(stubs.o (from toolbox.a) unit 16 section index 8)
+__lib_flushall in section 'farcode'
+ placed at address 01097d-0109f4 of size 000078
+(lib_libflushall.o (from clib-lc-ld-f256.a) unit 43 section index 2)
     Defines:
-        _Stub_lseek = 0110f7
-
-`?L23` in section 'farcode'  placed at address 011102-01110c of size 00000b
-(free.o (from clib-lc-ld.a) unit 22 section index 3)
+        __lib_flushall = 01097d
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        fflush in (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
+    Referenced from:
+        fflush (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
 
-_Exit in section 'farcode'  placed at address 01110d-011111 of size 000005
-(exitC99.o (from clib-lc-ld.a) unit 12 section index 2)
+fseek in section 'farcode'  placed at address 0109f5-010a6f of size 00007b
+(lib_fseek.o (from clib-lc-ld-f256.a) unit 39 section index 2)
     Defines:
-        _Exit = 01110d
+        fseek = 0109f5
     References:
-        _Stub_exit in (defaultExit.o (from clib-lc-ld.a) unit 13 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Stub_lseek in (stubs.o (from toolbox.a) unit 16 section index 8)
+        __lib_rdflush in (lib_rdflush.o (from clib-lc-ld-f256.a) unit 38 section index 2)
+        __lib_wrflush in (lib_wrflush.o (from clib-lc-ld-f256.a) unit 41 section index 2)
     Referenced from:
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
+        __lib_rdflush (lib_rdflush.o (from clib-lc-ld-f256.a) unit 38 section index 2)
 
-_Stub_exit in section 'farcode'  placed at address 011112-011112 of size 000001
-(defaultExit.o (from clib-lc-ld.a) unit 13 section index 2)
+fputc in section 'farcode'  placed at address 010a70-010aee of size 00007f
+(lib_fputc.o (from clib-lc-ld-f256.a) unit 34 section index 2)
     Defines:
-        _Stub_exit = 011112
+        fputc = 010a70
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __lib_fflush in (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+        __lib_fwrite in (lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
     Referenced from:
-        _Exit (exitC99.o (from clib-lc-ld.a) unit 12 section index 2)
+        (lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 2)
 
-__low_level_init in section 'farcode'
- placed at address 011113-011113 of size 000001
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 8)
+__initialize_sections in section 'farcode'
+ placed at address 010aef-010b71 of size 000083
+(initialize.o (from clib-lc-ld-f256.a) unit 44 section index 2)
     Defines:
-        __low_level_init = 011113
+        __initialize_sections = 010aef
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        memcpy in (lib_memcpy.o (from clib-lc-ld-f256.a) unit 46 section index 2)
+        memset in (lib_memset.o (from clib-lc-ld-f256.a) unit 25 section index 2)
     Referenced from:
-        __program_start (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 2)
+        __data_initialization_needed (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 3)
 
-_Dp in section 'registers'  placed at address 000100-000113 of size 000014
-(pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+_ValueSwitch16 in section 'farcode'
+ placed at address 010b72-010bf9 of size 000088
+(vswitch16.o (from clib-lc-ld-f256.a) unit 47 section index 2)
     Defines:
-        _Vfp = 000110
-        _Dp = 000100
+        _ValueSwitch16 = 010b72
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
     Referenced from:
-        main (hello.o unit 0 section index 2)
-        __program_start (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 2)
-        __data_initialization_needed (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 3)
-        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 5)
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
-        _JmpIndLong (controlFlow.o (from clib-lc-ld.a) unit 9 section index 3)
-        atexit (atexit.o (from clib-lc-ld.a) unit 11 section index 4)
-        (streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
-        ... 27 more
+        (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
+
+__lib_rdflush in section 'farcode'
+ placed at address 010bfa-010ca3 of size 0000aa
+(lib_rdflush.o (from clib-lc-ld-f256.a) unit 38 section index 2)
+    Defines:
+        __lib_rdflush = 010bfa
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+        fseek in (lib_fseek.o (from clib-lc-ld-f256.a) unit 39 section index 2)
+    Referenced from:
+        __lib_fwrite (lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
+        fseek (lib_fseek.o (from clib-lc-ld-f256.a) unit 39 section index 2)
+
+__ultoa_invert in section 'farcode'
+ placed at address 010ca4-010d65 of size 0000c2
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 4)
+    Defines:
+        __ultoa_invert = 010ca4
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _UDivMod32 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 11)
+    Referenced from:
+        (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
+
+`?L4` in section 'farcode'  placed at address 010d66-010e2c of size 0000c7
+(stubs.o (from toolbox.a) unit 16 section index 4)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
+
+__heap_addregion in section 'farcode'
+ placed at address 010e2d-010f0c of size 0000e0
+(heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 2)
+    Defines:
+        __heap_addregion = 010e2d
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __addfreechunk in (addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 3)
+    Referenced from:
+        __heap_initialize (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 3)
+
+__addfreechunk in section 'farcode'
+ placed at address 010f0d-010fed of size 0000e1
+(addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 3)
+    Defines:
+        __addfreechunk = 010f0d
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __size2ndx in (addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 2)
+    Referenced from:
+        free (free.o (from clib-lc-ld-f256.a) unit 22 section index 2)
+        __heap_addregion (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 2)
+
+_Stub_open in section 'farcode'  placed at address 010fee-0110df of size 0000f2
+(stubs.o (from toolbox.a) unit 16 section index 6)
+    Defines:
+        _Stub_open = 010fee
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Mul16 in (integer.o (from clib-lc-ld-f256.a) unit 18 section index 2)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+        sys_fsys_open in (bindings.o (from toolbox.a) unit 19 section index 65521)
+
+__heap_initialize in section 'farcode'
+ placed at address 0110e0-0111f3 of size 000114
+(heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 3)
+    Defines:
+        __heap_initialize = 0110e0
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __heap_addregion in (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 2)
+        memset in (lib_memset.o (from clib-lc-ld-f256.a) unit 25 section index 2)
+    Referenced from:
+        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 5)
+
+__lib_fflush in section 'farcode'
+ placed at address 0111f4-011346 of size 000153
+(lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+    Defines:
+        __lib_fflush = 0111f4
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Stub_write in (stubs.o (from toolbox.a) unit 16 section index 10)
+    Referenced from:
+        (lib_stdoutstream.o (from clib-lc-ld-f256.a) unit 32 section index 3)
+        fputc (lib_fputc.o (from clib-lc-ld-f256.a) unit 34 section index 2)
+        __lib_fwrite (lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
+        __lib_wrflush (lib_wrflush.o (from clib-lc-ld-f256.a) unit 41 section index 2)
+        fflush (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
+
+free in section 'farcode'  placed at address 011347-0114a6 of size 000160
+(free.o (from clib-lc-ld-f256.a) unit 22 section index 2)
+    Defines:
+        free = 011347
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __addfreechunk in (addfreechunk.o (from clib-lc-ld-f256.a) unit 23 section index 3)
+        __default_heap in (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 5)
+    Referenced from:
+        fclose (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
+
+fclose in section 'farcode'  placed at address 0114a7-011665 of size 0001bf
+(lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 3)
+    Defines:
+        fclose = 0114a7
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __close in (lib_fclose.o (from clib-lc-ld-f256.a) unit 21 section index 2)
+        __global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 6)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+        fflush in (lib_fflush.o (from clib-lc-ld-f256.a) unit 42 section index 2)
+        free in (free.o (from clib-lc-ld-f256.a) unit 22 section index 2)
+
+__lib_fwrite in section 'farcode'
+ placed at address 011666-011824 of size 0001bf
+(lib_libfwrite.o (from clib-lc-ld-f256.a) unit 37 section index 2)
+    Defines:
+        __lib_fwrite = 011666
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _Stub_write in (stubs.o (from toolbox.a) unit 16 section index 10)
+        __lib_fflush in (lib_libfflush.o (from clib-lc-ld-f256.a) unit 35 section index 2)
+        __lib_rdflush in (lib_rdflush.o (from clib-lc-ld-f256.a) unit 38 section index 2)
+        errno in (errno.o (from clib-lc-ld-f256.a) unit 20 section index 2)
+    Referenced from:
+        fputc (lib_fputc.o (from clib-lc-ld-f256.a) unit 34 section index 2)
+
+`?L40` in section 'farcode'  placed at address 011825-012197 of size 000973
+(__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 5)
+    References:
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        _JmpIndLong in (controlFlow.o (from clib-lc-ld-f256.a) unit 9 section index 3)
+        `_StringLiteral_*float*` in (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 3)
+        _ValueSwitch16 in (vswitch16.o (from clib-lc-ld-f256.a) unit 47 section index 2)
+        __lib_vsprintf in (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 6)
+        __ultoa_invert in (__vsprintf_reduced.o (from clib-lc-ld-f256.a) unit 31 section index 4)
+
+Section 'data_init_table'  placed at address 005000-005009 of size 00000a
+(linker generated)
 
 __program_start in section 'code'
- placed at address 00a000-00a018 of size 000019
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 2)
+ placed at address 00500a-005022 of size 000019
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 2)
     Defines:
-        __program_start = 00a000
+        __program_start = 00500a
     References:
         _DirectPageStart
         .sectionEnd(stack)
-        _Vfp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
-        __low_level_init in (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 8)
+        _Vfp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
+        __low_level_init in (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 8)
     Referenced from:
         (header.o unit 1 section index 2)
-        __program_root_section (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 7)
+        __program_root_section (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 7)
 
 __data_initialization_needed in section 'code'
- placed at address 00a019-00a030 of size 000018
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 3)
+ placed at address 005023-00503a of size 000018
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 3)
     Defines:
-        __data_initialization_needed = 00a019
+        __data_initialization_needed = 005023
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
         .sectionEnd(data_init_table)
         .sectionStart(data_init_table)
-        __initialize_sections in (initialize.o (from clib-lc-ld.a) unit 31 section index 2)
+        __initialize_sections in (initialize.o (from clib-lc-ld-f256.a) unit 44 section index 2)
+
+__call_initialize_global_streams in section 'code'
+ placed at address 00503b-00503e of size 000004
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 4)
+    Defines:
+        __call_initialize_global_streams = 00503b
+    References:
+        __initialize_global_streams in (streamlist.o (from clib-lc-ld-f256.a) unit 15 section index 8)
 
 __call_heap_initialize in section 'code'
- placed at address 00a031-00a04e of size 00001e
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 5)
+ placed at address 00503f-00505c of size 00001e
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 5)
     Defines:
-        __call_heap_initialize = 00a031
+        __call_heap_initialize = 00503f
     References:
-        _Dp in (pseudoRegisters.o (from clib-lc-ld.a) unit 10 section index 2)
+        _Dp in (pseudoRegisters.o (from clib-lc-ld-f256.a) unit 10 section index 2)
         .sectionSize(heap)
         .sectionStart(heap)
-        __default_heap in (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 5)
-        __heap_initialize in (heap_initialize.o (from clib-lc-ld.a) unit 24 section index 3)
+        __default_heap in (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 5)
+        __heap_initialize in (heap_initialize.o (from clib-lc-ld-f256.a) unit 24 section index 3)
 
-Section 'code'  placed at address 00a04f-00a059 of size 00000b
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 6)
+Section 'code'  placed at address 00505d-005067 of size 00000b
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 6)
     References:
-        exit in (exit.o (from clib-lc-ld.a) unit 7 section index 2)
+        exit in (exit.o (from clib-lc-ld-f256.a) unit 7 section index 2)
         main in (hello.o unit 0 section index 2)
 
-Section 'heap'  placed at address 00a05a-00b059 of size 001000
+Section 'heap'  placed at address 005068-006067 of size 001000
 (linker generated)
 
-Section 'stack'  placed at address 00b05a-00c059 of size 001000
+Section 'stack'  placed at address 006068-007067 of size 001000
 (linker generated)
 
 __program_root_section in section 'reset'
  placed at address 00fffc-00fffd of size 000002
-(cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 7)
+(cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 7)
     Defines:
         __program_root_section = 00fffc
     References:
-        __program_start in (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 2)
-
-file_descriptor in section 'zfar'
- placed at address 010015-010074 of size 000060
-(stubs.o (from toolbox.a) unit 16 section index 3)
-
-is_inited in section 'zfar'  placed at address 010075-010076 of size 000002
-(stubs.o (from toolbox.a) unit 16 section index 2)
-
-__default_heap in section 'zfar'
- placed at address 010077-010110 of size 00009a
-(heap_initialize.o (from clib-lc-ld.a) unit 24 section index 5)
-    Defines:
-        __default_heap = 010077
-    Referenced from:
-        __call_heap_initialize (cstartup.o (from f256-lc-ld-f256.a) unit 6 section index 5)
-        free (free.o (from clib-lc-ld.a) unit 22 section index 2)
-
-__atexit_index in section 'zfar'
- placed at address 010111-010112 of size 000002
-(atexit.o (from clib-lc-ld.a) unit 11 section index 3)
-    Defines:
-        __atexit_index = 010111
-    Referenced from:
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
-        atexit (atexit.o (from clib-lc-ld.a) unit 11 section index 4)
-
-__atexit in section 'zfar'  placed at address 010113-010192 of size 000080
-(atexit.o (from clib-lc-ld.a) unit 11 section index 2)
-    Defines:
-        __atexit = 010113
-    Referenced from:
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
-        atexit (atexit.o (from clib-lc-ld.a) unit 11 section index 4)
-
-__global_streams in section 'zfar'
- placed at address 010193-0101a6 of size 000014
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 6)
-    Defines:
-        __global_streams = 010193
-    Referenced from:
-        (streamlist.o (from clib-lc-ld.a) unit 15 section index 7)
-        __initialize_global_streams (streamlist.o (from clib-lc-ld.a) unit 15 section index 8)
-        fclose (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
-        fflush (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
-
-__stderr in section 'zfar'  placed at address 0101a7-0101bf of size 000019
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 5)
-
-__stdout in section 'zfar'  placed at address 0101c0-0101d8 of size 000019
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 4)
-
-__stdin in section 'zfar'  placed at address 0101d9-0101f1 of size 000019
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 3)
-
-_ExitCloseStreams in section 'zfar'
- placed at address 0101f2-0101f5 of size 000004
-(streamlist.o (from clib-lc-ld.a) unit 15 section index 2)
-    Defines:
-        _ExitCloseStreams = 0101f2
-    Referenced from:
-        exit (exit.o (from clib-lc-ld.a) unit 7 section index 2)
-        __initialize_global_streams (streamlist.o (from clib-lc-ld.a) unit 15 section index 8)
-
-errno in section 'zfar'  placed at address 0101f6-0101f7 of size 000002
-(errno.o (from clib-lc-ld.a) unit 20 section index 2)
-    Defines:
-        errno = 0101f6
-    Referenced from:
-        _Stub_open (stubs.o (from toolbox.a) unit 16 section index 6)
-        fclose (lib_fclose.o (from clib-lc-ld.a) unit 21 section index 3)
-        fflush (lib_fflush.o (from clib-lc-ld.a) unit 27 section index 2)
+        __program_start in (cstartup.o (from f256-lc-ld-f256.a) unit 5 section index 2)
 
 ##########################
 #                        #
@@ -686,6 +951,6 @@ errno in section 'zfar'  placed at address 0101f6-0101f7 of size 000002
 #                        #
 ##########################
 
-Executable       (Text): 3991 bytes
+Executable       (Text): 8212 bytes
 Data                   :  483 bytes
 Non-initialized        : 8212 bytes

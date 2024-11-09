@@ -10,8 +10,8 @@
 	.public sys_int_enable
 	.public sys_int_register
 	.public sys_int_pending
-	.public sys_get_info
 	.public sys_int_clear
+	.public sys_get_info
 	.public sys_chan_read_b
 	.public sys_chan_read
 	.public sys_chan_readline
@@ -44,8 +44,6 @@
 	.public sys_fsys_mkdir
 	.public sys_fsys_delete
 	.public sys_fsys_rename
-	.public sys_fsys_set_cwd
-	.public sys_fsys_get_cwd
 	.public sys_fsys_load
 	.public sys_fsys_register_loader
 	.public sys_fsys_stat
@@ -76,6 +74,10 @@
 	.public sys_txt_set_border_color
 	.public sys_txt_put
 	.public sys_txt_print
+	.public sys_kbd_handle_irq
+	.public sys_reboot
+	.public sys_proc_set_shell
+	.public sys_proc_get_result
 
 sys_proc_exit                .equlab 0xFFE000
 sys_int_enable_all           .equlab 0xFFE004
@@ -85,8 +87,8 @@ sys_int_disable              .equlab 0xFFE010
 sys_int_enable               .equlab 0xFFE014
 sys_int_register             .equlab 0xFFE018
 sys_int_pending              .equlab 0xFFE01C
-sys_get_info                 .equlab 0xFFE020
-sys_int_clear                .equlab 0xFFE024
+sys_int_clear                .equlab 0xFFE020
+sys_get_info                 .equlab 0xFFE024
 sys_chan_read_b              .equlab 0xFFE028
 sys_chan_read                .equlab 0xFFE02C
 sys_chan_readline            .equlab 0xFFE030
@@ -119,35 +121,37 @@ sys_fsys_set_label           .equlab 0xFFE098
 sys_fsys_mkdir               .equlab 0xFFE09C
 sys_fsys_delete              .equlab 0xFFE0A0
 sys_fsys_rename              .equlab 0xFFE0A4
-sys_fsys_set_cwd             .equlab 0xFFE0A8
-sys_fsys_get_cwd             .equlab 0xFFE0AC
-sys_fsys_load                .equlab 0xFFE0B0
-sys_fsys_register_loader     .equlab 0xFFE0B4
-sys_fsys_stat                .equlab 0xFFE0B8
-sys_mem_get_ramtop           .equlab 0xFFE0BC
-sys_mem_reserve              .equlab 0xFFE0C0
-sys_time_jiffies             .equlab 0xFFE0C4
-sys_rtc_set_time             .equlab 0xFFE0C8
-sys_rtc_get_time             .equlab 0xFFE0CC
-sys_kbd_scancode             .equlab 0xFFE0D0
-sys_err_message              .equlab 0xFFE0D4
-sys_kbd_layout               .equlab 0xFFE0D8
-sys_proc_run                 .equlab 0xFFE0DC
-sys_txt_get_capabilities     .equlab 0xFFE0E0
-sys_txt_set_mode             .equlab 0xFFE0E4
-sys_txt_set_resolution       .equlab 0xFFE0E8
-sys_txt_setsizes             .equlab 0xFFE0EC
-sys_txt_set_xy               .equlab 0xFFE0F0
-sys_txt_get_xy               .equlab 0xFFE0F4
-sys_txt_get_region           .equlab 0xFFE0F8
-sys_txt_set_region           .equlab 0xFFE0FC
-sys_txt_set_color            .equlab 0xFFE100
-sys_txt_get_color            .equlab 0xFFE104
-sys_txt_set_cursor           .equlab 0xFFE108
-sys_txt_set_cursor_visible   .equlab 0xFFE10C
-sys_txt_set_font             .equlab 0xFFE110
-sys_txt_get_sizes            .equlab 0xFFE114
-sys_txt_set_border           .equlab 0xFFE118
-sys_txt_set_border_color     .equlab 0xFFE11C
-sys_txt_put                  .equlab 0xFFE120
-sys_txt_print                .equlab 0xFFE124
+sys_fsys_load                .equlab 0xFFE0A8
+sys_fsys_register_loader     .equlab 0xFFE0AC
+sys_fsys_stat                .equlab 0xFFE0B0
+sys_mem_get_ramtop           .equlab 0xFFE0B4
+sys_mem_reserve              .equlab 0xFFE0B8
+sys_time_jiffies             .equlab 0xFFE0BC
+sys_rtc_set_time             .equlab 0xFFE0C0
+sys_rtc_get_time             .equlab 0xFFE0C4
+sys_kbd_scancode             .equlab 0xFFE0C8
+sys_err_message              .equlab 0xFFE0CC
+sys_kbd_layout               .equlab 0xFFE0D0
+sys_proc_run                 .equlab 0xFFE0D4
+sys_txt_get_capabilities     .equlab 0xFFE0D8
+sys_txt_set_mode             .equlab 0xFFE0DC
+sys_txt_set_resolution       .equlab 0xFFE0E0
+sys_txt_setsizes             .equlab 0xFFE0E4
+sys_txt_set_xy               .equlab 0xFFE0E8
+sys_txt_get_xy               .equlab 0xFFE0EC
+sys_txt_get_region           .equlab 0xFFE0F0
+sys_txt_set_region           .equlab 0xFFE0F4
+sys_txt_set_color            .equlab 0xFFE0F8
+sys_txt_get_color            .equlab 0xFFE0FC
+sys_txt_set_cursor           .equlab 0xFFE100
+sys_txt_set_cursor_visible   .equlab 0xFFE104
+sys_txt_set_font             .equlab 0xFFE108
+sys_txt_get_sizes            .equlab 0xFFE10C
+sys_txt_set_border           .equlab 0xFFE110
+sys_txt_set_border_color     .equlab 0xFFE114
+sys_txt_put                  .equlab 0xFFE118
+sys_txt_print                .equlab 0xFFE11C
+sys_kbd_handle_irq           .equlab 0xFFE120
+sys_reboot                   .equlab 0xFFE124
+sys_proc_set_shell           .equlab 0xFFE128
+sys_proc_get_result          .equlab 0xFFE12C

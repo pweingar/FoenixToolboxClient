@@ -86,6 +86,12 @@ extern SYSTEMCALL short sys_int_pending(unsigned short n);
 extern SYSTEMCALL void sys_get_info(p_sys_info info);
 
 /**
+ * @brief Force the system to reboot
+ * 
+ */
+extern SYSTEMCALL void sys_reboot();
+
+/**
  * Acknowledge an interrupt (clear out its pending flag)
  *
  * @param n the number of the interrupt: n[7..4] = group number, n[3..0] = individual number.
@@ -563,6 +569,22 @@ extern SYSTEMCALL short sys_kbd_layout(const char * tables);
  * @return the return result of the program
  */
 extern SYSTEMCALL short sys_proc_run(const char * path, int argc, char * argv[]);
+
+/**
+ * @brief Set the address of the code that should handle a process exiting
+ * 
+ * By default, the address is 0, which means that the system should reboot when the process exits
+ * If any other number is provided, the code at that location will be called as a far call using the
+ * simplecall convention. The first argument will be the return result passed to proc_exit
+ * 
+ * @param address the address of the handler code for proc_exit
+ */
+extern SYSTEMCALL void sys_proc_set_shell(uint32_t address);
+
+/*
+ * Return the result code of the previously running user process
+ */
+extern SYSTEMCALL int sys_proc_get_result();
 
 //
 // Text screen calls

@@ -38,4 +38,19 @@ extern void cmd_delete(char * path);
  */
 extern void cmd_rename(char * new_path, char * old_path);
 
+/**
+ * Run a file
+ * 
+ * NOTE: this RUN command does not support command line arguments... it's just a launcher
+ * 
+ * @param path the path to the file to run
+ */
+extern void cmd_run(char * path);
+
+/**
+ * @brief For a quit of the program back to the Toolbox and whatever shell is registerd
+ * 
+ */
+extern void cmd_bye();
+
 #endif

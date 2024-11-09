@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <ctype.h>
 
 #include "../lib/include/toolbox.h"
@@ -7,15 +8,34 @@
 #define LINESIZE 128
 #define PAGESIZE 25
 
+/**
+ * @brief Set the size of the border
+ * 
+ * @param x width of the border
+ * @param y height of the border
+ */
 void cmd_set_border_size(short x, short y) {
+	printf("<%d, %d>\n", x, y);
     sys_txt_set_border(0, x, y);
 }
 
+/**
+ * @brief Set the color of the border
+ * 
+ * @param r red component (0 - 255)
+ * @param g green component (0 - 255)
+ * @param b blue component (0 - 255)
+ */
 void cmd_set_border_color(short r, short g, short b) {
     printf("<%d, %d, %d>\n", r, g, b);
     sys_txt_set_border_color(0, r, g, b);
 }
 
+/**
+ * @brief Display the contents of the file. Paginate if it is too big to display at once.
+ * 
+ * @param path the path to the file to display
+ */
 void cmd_more(const char * path) {
     unsigned char line[LINESIZE];
     short count = 0;
@@ -40,8 +60,10 @@ void cmd_more(const char * path) {
     }
 }
 
-/*
- * Try out the directory calls
+/**
+ * @brief Display a directory listing
+ * 
+ * @param path the path to the directory to display
  */
 void cmd_dir(const char * path) {
     t_file_info file_info;
@@ -73,7 +95,10 @@ void cmd_dir(const char * path) {
 }
 
 /**
- * Dump memory to the screen
+ * @brief Dump the contents of memory to the screen in hex and ASCII
+ * 
+ * @param start the starting address
+ * @param size the number of bytes to display
  */
 void cmd_dump(uint32_t start, uint16_t size) {
     const char * hex_digits = "0123456789ABCDEF";
@@ -134,4 +159,26 @@ void cmd_rename(char * new_path, char * old_path) {
     if (result < 0) {
         printf("Could not rename file: %s\n", sys_err_message(result));
     }
+}
+
+/**
+ * Run a file
+ * 
+ * NOTE: this RUN command does not support command line arguments... it's just a launcher
+ * 
+ * @param path the path to the file to run
+ */
+void cmd_run(char * path) {
+    short result = sys_proc_run(path, 0, 0);
+    if (result < 0) {
+        printf("Could not run file: %s\n", sys_err_message(result));
+    }
+}
+
+/**
+ * @brief For a quit of the program back to the Toolbox and whatever shell is registerd
+ * 
+ */
+void cmd_bye() {
+	sys_proc_exit(123);
 }

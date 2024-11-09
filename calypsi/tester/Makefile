@@ -1,6 +1,3 @@
-UNIT := F256K
-MEMORY := RAM
-
 # Define OS-dependent variables
 
 ifeq ($(OS),Windows_NT)
@@ -9,47 +6,28 @@ else
 	RM = rm -f
 endif
 
-# Define model-specific variables, including tools, source files, compiler flags, etc.
+CC=cc65816
+AS=as65816
+LD=ln65816
+AR=nlib
 
-ifeq ($(UNIT),F256K)
-	CPU=w65816
-	C_SRCS_DEBUGGER=$(DEBUGGER)/agent.c $(DEBUGGER)/c256-uart.c $(DEBUGGER)/low_level_WDC65816.s
-	SRCS_FOR_UNIT=
-	CFLAGS_FOR_UNIT=-DMODEL=17 -DCPU=255 --code-model large --data-model large --target=f256
-
-	ifeq ($(MEMORY),ROM)
-		LDFLAGS_FOR_UNIT=clib-lc-ld.a --rtattr printf=medium  # --target=f256 C256/f256-flash.scm 
-	else
-		LDFLAGS_FOR_UNIT=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --target=f256
-	endif
-endif
-
-ifeq ($(CPU),w65816)
-	CC=cc65816
-	AS=as65816
-	LD=ln65816
-	AR=nlib
-endif
-
-INCLUDES=-I. -I./include
-CFLAGS=$(INCLUDES) $(CFLAGS_FOR_UNIT) -l # -l -D_CALYPSI_MCP_DEBUGGER
+INCLUDES=-I.
+CFLAGS=$(INCLUDES) --code-model large --data-model large
 ASFLAGS=$(INCLUDES) --data-model large --code-model large
+LDFLAGS=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --target=f256 --hosted --list-file tester.map
 
-ifeq ($(MEMORY),ROM)
-	LDFLAGS=--rom-code $(LDFLAGS_FOR_UNIT) --list-file tester.map
-else
-	LDFLAGS=$(LDFLAGS_FOR_UNIT) --list-file tester.map
-endif
-
-SRCS = tester.c test_cmds.c header.s stubs.c bindings.s $(SRCS_FOR_UNIT) # $(C_SRCS_DEBUGGER)  ram-startup.s
+SRCS = tester.c test_cmds.c header.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
-LIBS = 
+LIBS = ../lib/toolbox.a
 
 .PHONY: clean
 
 tester.s37: $(OBJS) $(LIBS)
 	$(LD) $(LDFLAGS) --output-format s37 -o $@ $^ 
+
+tester.pgz: $(OBJS) $(LIBS)
+	$(LD) $(LDFLAGS) --output-format pgz -o $@ $^ 
 
 # Build the object files from C
 %.o: %.c
@@ -59,13 +37,6 @@ tester.s37: $(OBJS) $(LIBS)
 %.o: %.s
 	$(AS) $(ASFLAGS) -o $@ $^
 
-lex.yy.c: tester_scan.l
-	flex tester_scan.l
-
-tester_gram.tab.c: tester_gram.y
-	bison -d tester_gram.y
-
 # Clean up after a build
 clean:
-	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.map *.yy.c *.tab.c *.tab.h
-
+	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.pgz *.map

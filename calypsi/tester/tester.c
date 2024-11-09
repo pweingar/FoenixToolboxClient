@@ -17,7 +17,7 @@ void yyerror(char * s) {
 }
 
 void readline(char * l) {
-    sys_chan_readline(0, l, LINESIZE);
+    sys_chan_readline(0, (unsigned char *)l, LINESIZE);
 }
 
 int strindex(char * str, char c) {
@@ -95,7 +95,16 @@ void parse(char * line) {
             char * path = strtok(NULL, " ");
             cmd_delete(path);
             return;
-        }
+
+        } else if (strcmp(tok, "run") == 0) {
+            char * path = strtok(NULL, " ");
+            cmd_run(path);
+            return;
+
+        } else if (strcmp(tok, "bye") == 0) {
+			cmd_bye();
+			return;
+		}
     }
 
     printf("Syntax error.\n");
@@ -110,11 +119,21 @@ void repl() {
     } while(1);
 }
 
+extern int main(int argc, char * argv[]);
+
+void shell() {
+	printf("Rebooting...\n");
+	printf("Progam quit with code: %d\n", sys_proc_get_result());
+	main(0, 0);
+
+	while(1) ;
+}
+
 int main(int argc, char * argv[]) {
+	// Register a routine in this program as the shell (just for testing purposes)
+	// sys_proc_set_shell((uint32_t)shell);
+
     printf("Welcome to the Foenix Toolbox Tester\n\n");
-    int x = 23;
-    int y = 54;
-    printf("%d\n", x * y);
     repl();
     return 0;
 }
