@@ -14,10 +14,10 @@ AR=nlib
 INCLUDES=-I. -I./include
 CFLAGS=$(INCLUDES) --code-model large --data-model large
 ASFLAGS=$(INCLUDES) --data-model large --code-model large
-LDFLAGS=f256-plain.scm --target=f256 --hosted --list-file toolbox.map
+LDFLAGS=f256-plain.scm --cstartup=ramstartup --target=f256 --hosted --list-file toolbox.map
 
 
-SRCS = hello.c header.s # ram-startup.s
+SRCS = hello.c header.s ram-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = ../lib/toolbox.a
