@@ -38,6 +38,8 @@
               .section code, noreorder
 #endif
               .pubweak __program_start
+              .pubweak __program_root_section
+__program_root_section:
 __program_start:
               clc
               xce                   ; native 16-bit mode
