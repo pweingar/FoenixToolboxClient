@@ -4,7 +4,7 @@
     (memory DirectPage (address (#x000000 . #x0000ff)) (section registers))
 
     (memory LoMem
-      (address (#x005000 . #x00bfff))
+      (address (#x007000 . #x00bfff))
       (type ANY))
 
     (memory HeaderMem

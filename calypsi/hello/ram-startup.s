@@ -1,3 +1,12 @@
+/****************************************************************************
+ *
+ * Copyright Håkan Thörngren
+ *
+ * This file is part of the Calypsi C library.
+ * Permission to use with the Calypsi tool chain is hereby granted.
+ *
+ ****************************************************************************/
+
 ;;; Startup variant, change attribute value if you make your own
               .rtmodel cstartup,"ramstartup"
 
@@ -21,6 +30,15 @@
 
 ;;; ***************************************************************************
 ;;;
+;;; The reset vector. This uses the entry point label __program_root_section
+;;; which by default is what the linker will pull in first.
+;;;
+;;; ***************************************************************************
+
+              .pubweak __program_root_section
+
+;;; ***************************************************************************
+;;;
 ;;; __program_start - actual start point of the program
 ;;;
 ;;; Set up CPU stack, initialize sections and call main().
@@ -32,13 +50,10 @@
 
 #ifdef __CALYPSI_CODE_MODEL_COMPACT__
 	      .section code
-#elif __CALYPSI_CODE_MODEL_LARGE__
-              .section farcode, noreorder
 #else
               .section code, noreorder
 #endif
               .pubweak __program_start
-              .pubweak __program_root_section
 __program_root_section:
 __program_start:
               clc

@@ -14,7 +14,7 @@ AR=nlib
 INCLUDES=-I. -I./include
 CFLAGS=$(INCLUDES) --code-model large --data-model large
 ASFLAGS=$(INCLUDES) --data-model large --code-model large
-LDFLAGS=f256-plain.scm --cstartup=ramstartup --target=f256 --hosted --list-file toolbox.map
+LDFLAGS=f256-plain.scm --cstartup=ramstartup --rtattr printf=medium --target=f256 --hosted --list-file hello.map
 
 
 SRCS = hello.c header.s ram-startup.s
@@ -40,5 +40,5 @@ hello.pgz: $(OBJS) $(LIBS)
 
 # Clean up after a build
 clean:
-	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.pgz
+	$(RM) $(OBJS4RM) *.s37 *.o *.a *.lst *.pgz *.map
 
