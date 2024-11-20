@@ -18,5 +18,19 @@ What the Foenix Toolbox is not is a complete operating system. This is on purpos
 
 The philosophy of the Toolbox is that the owner of a Foenix computer has bought the machine to tinker with and make it do what they want it to do. The Toolbox should be there to help the user but not hinder them or restrict their freedom to do what they want with the machine.
 
+\section*{How to Read This Manual}
+Well, with your eyes, naturally.
+
+I have tried to follow some conventions in this manual.
+
+\begin{itemize}
+	\item Each function description starts with the name of the function, followed by its address in the Toolbox jumptable.
+	\item Function descriptions that include a version number at the end of the heading ({\it e.g.} ``v1.01'') indicate that the function was added in that version of the Toolbox and is not present in earlier builds.
+	\item Function descriptions include a small paragraph describing the purpose and over-all usage of the function and is followed by a prototype of the function, describing the parameters and return results.
+	\item Most functions will include simple usage examples in both C and assembly.
+	\item C functions will usually be displayed like so: \lstinline|extern int sample_function(char c)|
+	\item Assembly code will usually be displayed in a typewriter style font: \verb+label: jsl sample_function+
+\end{itemize}
+
 \section*{Copyright Information}
 Foenix Toolbox and all code except for the FatFS file system library are published under the BSD 3 Clause License. Please see the source code for the license terms. The Foenix Toolbox file system is provided by the FatFS file system, which is covered under its own license. For information about the author of FatFS and its license terms, please see the Foenix Toolbox source code.

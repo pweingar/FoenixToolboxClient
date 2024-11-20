@@ -86,6 +86,14 @@ sys_int_pending = $ffe01c
 
 
 ;
+; extern SYSTEMCALL void sys_kbd_handle_irq();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_kbd_handle_irq = $ffe120
+
+
+;
 ; extern SYSTEMCALL void sys_get_info(p_sys_info info);
 ; 
 ; info goes in X[15..0]:A[15..0]
@@ -957,4 +965,102 @@ txt_print        .namespace
 message         .dword ?      ; the ASCII Z string to print
                 .endv
                 .endn
+
+;
+; extern SYSTEMCALL short sys_iecll_ioinit();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_ioinit = $ffe130
+
+
+;
+; extern SYSTEMCALL short sys_iecll_talk(uint8_t device);
+; 
+; device goes in A[7..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_talk = $ffe140
+
+
+;
+; extern SYSTEMCALL short sys_iecll_talk_sa(uint8_t secondary_address);
+; 
+; secondary_address goes in A[7..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_talk_sa = $ffe144
+
+
+;
+; extern SYSTEMCALL short sys_iecll_listen(uint8_t device);
+; 
+; device goes in A[7..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_listen = $ffe14c
+
+
+;
+; extern SYSTEMCALL short sys_iecll_listen_sa(uint8_t secondary_address);
+; 
+; secondary_address goes in A[7..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_listen_sa = $ffe150
+
+
+;
+; extern SYSTEMCALL void sys_iecll_untalk();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_untalk = $ffe148
+
+
+;
+; extern SYSTEMCALL void sys_iecll_unlisten();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_unlisten = $ffe154
+
+
+;
+; extern SYSTEMCALL uint8_t sys_iecll_in();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_in = $ffe134
+
+
+;
+; extern SYSTEMCALL short sys_iecll_eoi();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_eoi = $ffe138
+
+
+;
+; extern SYSTEMCALL void sys_iecll_out(uint8_t byte);
+; 
+; byte goes in A[7..0]
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_out = $ffe13c
+
+
+;
+; extern SYSTEMCALL void sys_iecll_reset();
+;
+; 0 bytes needed for the stack parameters
+;
+sys_iecll_reset = $ffe158
+
 			.endn

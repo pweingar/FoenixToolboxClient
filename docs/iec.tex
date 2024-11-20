@@ -1,0 +1,88 @@
+\section{IEC Bus Functions}
+This collection of functions expose low-level access to the IEC bus (aka Commodore serial bus).
+The functions allow a caller to issue {\sc talk}, {\sc untalk}, {\sc listen}, {\sc unlisten} commands to devices on the bus.
+The functions also allow a caller to send and receive data bytes and to check for the end-of-interaction byte (``EOI'') when
+listening to a talking device.
+
+Currently, these functions do not provide higher level access to devices, like managing files and directories on disk drives.
+That level of access may be added in the future.
+
+As of version 1.01, these functions should be considered experimental and quite probably buggy.
+
+\subsection*{sys\_iecll\_ioinit -- 0xFFE130 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_ioinit()! \\ \hline
+Purpose & Initialize the IEC interface \\ \hline
+Returns & short 0 on success, -1 if no devices found \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_talk -- 0xFFE140 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_talk(uint8_t device)! \\ \hline
+Purpose & Send a TALK command to a device \\ \hline
+device & the number of the device to become the talker \\ \hline
+Returns & short \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_talk\_sa -- 0xFFE144 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_talk_sa(uint8_t secondary_address)! \\ \hline
+Purpose & Send the secondary address to the TALK command, release ATN, and turn around control of the bus \\ \hline
+secondary\_address & the secondary address to send \\ \hline
+Returns & short \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_listen -- 0xFFE14C -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_listen(uint8_t device)! \\ \hline
+Purpose & Send a LISTEN command to a device \\ \hline
+device &  \\ \hline
+Returns & short the number of the device to become the listener \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_listen\_sa -- 0xFFE150 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_listen_sa(uint8_t secondary_address)! \\ \hline
+Purpose & Send the secondary address to the LISTEN command and release ATN \\ \hline
+secondary\_address & the secondary address to send \\ \hline
+Returns & short \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_untalk -- 0xFFE148 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_iecll_untalk()! \\ \hline
+Purpose & Send the UNTALK command to all devices and drop ATN \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_unlisten -- 0xFFE154 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_iecll_unlisten()! \\ \hline
+Purpose & Send the UNLISTEN command to all devices \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_in -- 0xFFE134 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!uint8_t sys_iecll_in()! \\ \hline
+Purpose & Try to get a byte from the IEC bus \\ \hline
+Returns & uint8\_t the byte read \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_eoi -- 0xFFE138 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_iecll_eoi()! \\ \hline
+Purpose & Check to see if the last byte read was an EOI byte \\ \hline
+Returns & short 0 if not EOI, any other number if EOI \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_out -- 0xFFE13C -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_iecll_out(uint8_t byte)! \\ \hline
+Purpose & Send a byte to the IEC bus. Actually sends the previous byte and queues the current byte. \\ \hline
+byte & the byte to send \\ \hline
+\end{tabular}\end{table}
+
+\subsection*{sys\_iecll\_reset -- 0xFFE158 -- v1.01}
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_iecll_reset()! \\ \hline
+Purpose & Assert and release the reset line on the IEC bus \\ \hline
+\end{tabular}\end{table}

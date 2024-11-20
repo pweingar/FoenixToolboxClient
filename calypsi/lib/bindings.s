@@ -78,6 +78,17 @@
 	.public sys_reboot
 	.public sys_proc_set_shell
 	.public sys_proc_get_result
+	.public sys_iecll_ioinit
+	.public sys_iecll_in
+	.public sys_iecll_eoi
+	.public sys_iecll_out
+	.public sys_iecll_talk
+	.public sys_iecll_talk_sa
+	.public sys_iecll_untalk
+	.public sys_iecll_listen
+	.public sys_iecll_listen_sa
+	.public sys_iecll_unlisten
+	.public sys_iecll_reset
 
 sys_proc_exit                .equlab 0xFFE000
 sys_int_enable_all           .equlab 0xFFE004
@@ -155,3 +166,14 @@ sys_kbd_handle_irq           .equlab 0xFFE120
 sys_reboot                   .equlab 0xFFE124
 sys_proc_set_shell           .equlab 0xFFE128
 sys_proc_get_result          .equlab 0xFFE12C
+sys_iecll_ioinit             .equlab 0xFFE130
+sys_iecll_in                 .equlab 0xFFE134
+sys_iecll_eoi                .equlab 0xFFE138
+sys_iecll_out                .equlab 0xFFE13C
+sys_iecll_talk               .equlab 0xFFE140
+sys_iecll_talk_sa            .equlab 0xFFE144
+sys_iecll_untalk             .equlab 0xFFE148
+sys_iecll_listen             .equlab 0xFFE14C
+sys_iecll_listen_sa          .equlab 0xFFE150
+sys_iecll_unlisten           .equlab 0xFFE154
+sys_iecll_reset              .equlab 0xFFE158

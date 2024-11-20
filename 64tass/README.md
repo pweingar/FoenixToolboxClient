@@ -59,3 +59,14 @@ NOTE: the Foenix IDE was compiled to run under .Net on Windows. It can be run un
 1. Click the "Send Binary" button.
 1. The F256 should reboot, and the "RAM" icon should be highlighted.
 1. Wait for the boot screen to enter the RAM program by default, or press `F1` or the spacebar on your F256 keyboard.
+
+# Updating the Bindings
+
+If the Toolbox jumptable is updated (moved or functions are added), the `bindings.s` file will need to be updated.
+This can be done automatically with the Python script `genbindings.py`.
+
+1. Update the Calypsi bindings first (instructions contained there).
+1. Run the command `python genbindings.py {C header path} {C bindings path}`, where `{C header path}` is the path to the `toolbox.h` in the Calpsi include directory, and `{C binding path}` is the path to the `binding.s` file in the Calpsi `lib` folder. For instance: `python genbindings.py ..\calypsi\lib\include\toolbox.h ..\calypsi\lib\bindings.s`.
+1. The script will run and report on all functions recognized, and the `bindings.s` file should be updated. Scan through the file to make sure it looks reasonable.
+
+The `genbindings.py` script gets the addresses of the functions from Calypsi's `bindings.s` file, but additional information on parameters, return results, etc. are pulled from the `toolbox.h` file. Regular expression pattern matching is used to find the functions and parameter information from the header file (including parsing the comments), so the 64TASS bindings file might have problems if there are inconsistencies of formatting or naming in the header file.

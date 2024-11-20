@@ -76,11 +76,83 @@ argv:
     .null "test"
 \end{verbatim}
 
+\subsection*{sys\_proc\_set\_shell -- 0xFFE128 -- v1.01}
+Set the address of a handler to be called in the event that a program calls \lstinline|sys_proc_exit|.
+If the address is 0 (the default), the Toolbox will restart the machine when \lstinline|sys_proc_exit| is called.
+If a non-zero address is provided, then the code at that address will be called in the same manner that program code
+is started.
+This function is provided to allow for the creation of shell programs and is not expected to be called by normal programs.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_proc_set_shell(uint32_t address)! \\ \hline
+Purpose & Set the address of the code that should handle a process exiting \\ \hline
+address & the address of the handler code for proc\_exit \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+	uint32_t shell_entry = ...;
+	sys_proc_set_shell(shell_entry);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	ldx ##.word2 shell_entry
+	lda ##.word0 shell_entry
+	jsl sys_proc_set_shell
+\end{verbatim}
+
+
+\subsection*{sys\_proc\_get\_result -- 0xFFE12C -- v1.01}
+If a program called \lstinline|sys_proc_exit|, this function returns the result code passed in that call.
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!int sys_proc_get_result()! \\ \hline
+Purpose & Set the address of the code that should handle a process exiting \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+	// Get the result of the last program
+	int result = sys_proc_get_result();	
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	; Get the result of the last program
+	jsl sys_proc_get_result
+	; Result code in the 16-bit accumulator
+\end{verbatim}
+
+
+\subsection*{sys\_reboot -- 0xFFE124 -- v1.01}
+Force the system to reboot.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_reboot()! \\ \hline
+Purpose & Force the system to reboot \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+	// Reboot the F256
+    sys_reboot();	
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	; Reboot the F256
+    jsl sys_reboot
+\end{verbatim}
 
 \subsection*{sys\_get\_info -- 0xFFE020}
 Fill out a structure with information about the computer. This information includes the model, the CPU, the amount of memory,
 versions of the board and FPGAs, and what optional equipment is installed.
-.
+
 There is no return value.
 
 \bigskip

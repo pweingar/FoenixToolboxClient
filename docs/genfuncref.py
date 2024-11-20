@@ -311,7 +311,7 @@ with open(sys.argv[1], "r") as input:
 #
 with open(sys.argv[2], "r") as addresses:
 	for line in addresses.readlines():
-		m = re.match("^(\w+):\s+.equlab\s+0x([0-9a-fA-F]+)", line)
+		m = re.match("^(\w+)\s+.equlab\s+0x([0-9a-fA-F]+)", line)
 		if m:
 			func_name = m.group(1).strip()
 			func_address = int(m.group(2), 16)

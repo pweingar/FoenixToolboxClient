@@ -6,21 +6,22 @@
 \contentsline {chapter}{\numberline {3}Toolbox Functions}{9}{}%
 \contentsline {section}{\numberline {3.1}Calling Convention}{9}{}%
 \contentsline {section}{\numberline {3.2}General Functions}{10}{}%
-\contentsline {section}{\numberline {3.3}Channel Functions}{14}{}%
-\contentsline {section}{\numberline {3.4}Block Device Functions}{21}{}%
-\contentsline {section}{\numberline {3.5}File System Functions}{24}{}%
-\contentsline {section}{\numberline {3.6}Text System Functions}{36}{}%
-\contentsline {section}{\numberline {3.7}Interrupt Functions}{47}{}%
-\contentsline {chapter}{\numberline {4}F256 Toolbox Boot Process}{53}{}%
-\contentsline {chapter}{\numberline {5}Extending the System}{55}{}%
-\contentsline {section}{\numberline {5.1}Channel Device Drivers}{55}{}%
-\contentsline {section}{\numberline {5.2}Block Device Drivers}{56}{}%
-\contentsline {section}{\numberline {5.3}Keyboard Translation Tables}{57}{}%
-\contentsline {section}{\numberline {5.4}File Loaders}{57}{}%
-\contentsline {chapter}{\numberline {6}Appendix}{59}{}%
-\contentsline {section}{\numberline {6.1}Console IOCTRL Commands}{59}{}%
-\contentsline {section}{\numberline {6.2}ANSI Terminal Codes}{59}{}%
-\contentsline {section}{\numberline {6.3}Keyboard Scan codes}{62}{}%
-\contentsline {section}{\numberline {6.4}Useful Data Structures}{62}{}%
-\contentsline {section}{\numberline {6.5}Foenix Executable File Formats}{66}{}%
-\contentsline {section}{\numberline {6.6}Memory Map}{66}{}%
+\contentsline {section}{\numberline {3.3}Channel Functions}{15}{}%
+\contentsline {section}{\numberline {3.4}Block Device Functions}{22}{}%
+\contentsline {section}{\numberline {3.5}File System Functions}{25}{}%
+\contentsline {section}{\numberline {3.6}Text System Functions}{37}{}%
+\contentsline {section}{\numberline {3.7}Interrupt Functions}{48}{}%
+\contentsline {section}{\numberline {3.8}IEC Bus Functions}{54}{}%
+\contentsline {chapter}{\numberline {4}F256 Toolbox Boot Process}{57}{}%
+\contentsline {chapter}{\numberline {5}Extending the System}{59}{}%
+\contentsline {section}{\numberline {5.1}Channel Device Drivers}{59}{}%
+\contentsline {section}{\numberline {5.2}Block Device Drivers}{60}{}%
+\contentsline {section}{\numberline {5.3}Keyboard Translation Tables}{61}{}%
+\contentsline {section}{\numberline {5.4}File Loaders}{61}{}%
+\contentsline {chapter}{\numberline {6}Appendix}{63}{}%
+\contentsline {section}{\numberline {6.1}Console IOCTRL Commands}{63}{}%
+\contentsline {section}{\numberline {6.2}ANSI Terminal Codes}{63}{}%
+\contentsline {section}{\numberline {6.3}Keyboard Scan codes}{66}{}%
+\contentsline {section}{\numberline {6.4}Useful Data Structures}{66}{}%
+\contentsline {section}{\numberline {6.5}Foenix Executable File Formats}{70}{}%
+\contentsline {section}{\numberline {6.6}Memory Map}{70}{}%

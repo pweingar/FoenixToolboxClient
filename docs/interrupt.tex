@@ -20,22 +20,20 @@ enable or disable IRQ processing at the CPU level. The \lstinline!int_enable_all
 functions work at the CPU level and do not affect the mask bits in the F256's interrupt controller. The \lstinline!int_enable!, and \lstinline!int_disable!
 functions work at the level of the individual device interrupt in the interrupt controller.
 
-In some situations, the overhead required by the Toolbox to process interrupts may cause problems.
-If that is the case, there is a way to override the usual processing and hand control over to the interrupt handler earlier.
-There are two 32-bit vectors reserved:
+\subsection*{Overriding Toolbox Interrupt Handling}
+The Toolbox takes care of the details of the F256's interrupt controller for user programs, but that comes at the cost of overhead.
+Many programs will need more efficient control over interrupts and will prefer to manage interrupts for themselves, without the 
+Toolbox intervening.
 
-\begin{lstlisting}
-    uint32_t * irq_ram_vector = (uint32_t *)0x00fdec;
-    uint32_t * nmi_ram_vector = (uint32_t *)0x00fdf4;
-\end{lstlisting}
+This is perfectly fine.
 
-By default, these vectors are set to 0, and they will be ignored by the Toolbox.
-If a program needs to take over the interrupt processing for either the IRQ or the NMI interrupt, it should set the appropriate vector
-to the address of a regular subroutine that will do its own determination of which interrupt needs to be processed.
-The Toolbox will check these vectors after saving all the registers that need to be restored after the interrupt is processed.
-If it sees a non-zero value in the vector, it will call the handler.
-
-NOTE: both the low-level override handler and the standard interrupt handlers should be far call subroutines that take no argument and returns no value.
+The 65816's interrupt vectors are stored in RAM (the F256 populates them based on data in flash at boot time).
+Programs can write their own interupt handler addresses to those vectors to take over the handling of interrupts.
+The only problem with this is that the Toolbox depends upon interrupts to handle keystrokes.
+By default, the Toolbox uses the start-of-frame (SOF) interrupt on the F256k and F256k2 to periodically trigger a
+scan of the keyboard matrix and the PS/2 interrupt on the F256jr.
+If a program takes over interrupts but still needs to use the Toolbox's keyboard routines, it will need to call
+\lstinline!sys_kbd_handle_irq! function periodically (see below) to trigger the matrix scan or check the PS/2 port for keystrokes.
 
 \begin{table}
     \begin{center}
@@ -298,4 +296,31 @@ sys_int_clear(INT_SOF_A);
     ; Acknowledge the processing of the start-of-frame interrupt
     lda #INT_SOF_A
     jsl sys_int_clear
+\end{verbatim}
+
+\subsection*{sys\_kbd\_handle\_irq -- 0xFFE120 -- v1.01}
+This function causes the keyboard processing code to try to process keystrokes.
+In the case of the mechanical keyboard on the F256k, it will scan the keyboard matrix and process any changes to the key positions.
+In the case of the optical keyboard on the F256k2, it will check the optical keyboard queue for any pending keystrokes.
+In the case of the PS/2 keyboard on the F256jr, it will check the PS/2 device for pending bytes.
+
+Internally, this function is called during the SOF interrupt on the F256k and F256k2 and is called in response to a PS/2 interrupt on the F256jr. The routine is exposed through the jumptable in case a program wants to take over the interrupt processing but still wants the Toolbox to interpret keystrokes. To get characters from the console device or to get keyboard scancodes, this function must be called periodically, as it is this function that interprets keypresses and queues up scancodes and console bytes.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_kbd_handle_irq()! \\ \hline
+Purpose & Handle an IRQ to query the keyboard \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+	// Look for and process pending keystrokes
+	sys_kbd_handle_irq();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	; Look for and process pending keystrokes
+	jsl sys_kbd_handle_irq
 \end{verbatim}
