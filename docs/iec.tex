@@ -6,83 +6,292 @@ listening to a talking device.
 
 Currently, these functions do not provide higher level access to devices, like managing files and directories on disk drives.
 That level of access may be added in the future.
+Similarly, only the original, slow protocol of data transfer is supported.
+Faster protocols like JiffyDOS or the C128 faster data transfer protocols are not yet supported.
 
 As of version 1.01, these functions should be considered experimental and quite probably buggy.
 
 \subsection*{sys\_iecll\_ioinit -- 0xFFE130 -- v1.01}
+This function initializes the IEC port to make sure the pins are in a valid start condition. It should be called before first accessing the IEC port.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_ioinit()! \\ \hline
 Purpose & Initialize the IEC interface \\ \hline
 Returns & short 0 on success, -1 if no devices found \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Initialize the IEC port
+sys_iecll_ioinit();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Initialize the IEC port
+jsl sys_iecll_ioinit
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_talk -- 0xFFE140 -- v1.01}
+Send a {\sc talk} command to a device on the IEC bus.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_talk(uint8_t device)! \\ \hline
-Purpose & Send a TALK command to a device \\ \hline
+Purpose & Send a {\sc talk} command to a device \\ \hline
 device & the number of the device to become the talker \\ \hline
 Returns & short \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Tell IEC device #8 to start talking
+sys_iecll_talk(8);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Tell IEC device #8 to start talking
+    lda #8
+    jsl sys_iecll_talk
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_talk\_sa -- 0xFFE144 -- v1.01}
+Send the secondary address for the {\sc talk} command.
+Usually, this specifies the channel on the IEC device.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_talk_sa(uint8_t secondary_address)! \\ \hline
-Purpose & Send the secondary address to the TALK command, release ATN, and turn around control of the bus \\ \hline
+Purpose & Send the secondary address to the {\sc talk} command, release ATN,
+and turn around control of the bus \\ \hline
 secondary\_address & the secondary address to send \\ \hline
 Returns & short \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Set the talk IEC channel to 2
+sys_iecll_talk_sa(2);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Set the talk IEC channel to 2
+    lda #2
+    jsl sys_iecll_talk_sa
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_listen -- 0xFFE14C -- v1.01}
+Send the {\sc listen} command to a device on the IEC bus.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_listen(uint8_t device)! \\ \hline
-Purpose & Send a LISTEN command to a device \\ \hline
+Purpose & Send a {\sc listen} command to a device \\ \hline
 device &  \\ \hline
 Returns & short the number of the device to become the listener \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Tell IEC device #8 to start listening
+sys_iecll_listen(8);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Tell IEC device #8 to start listening
+    lda #8
+    jsl sys_iecll_listen
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_listen\_sa -- 0xFFE150 -- v1.01}
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_listen_sa(uint8_t secondary_address)! \\ \hline
-Purpose & Send the secondary address to the LISTEN command and release ATN \\ \hline
+Purpose & Send the secondary address to the {\sc listen} command and release ATN \\ \hline
 secondary\_address & the secondary address to send \\ \hline
 Returns & short \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Set the listen IEC channel to 2
+sys_iecll_listen_sa(2);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Set the listen IEC channel to 2
+    lda #2
+    jsl sys_iecll_listen_sa
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_untalk -- 0xFFE148 -- v1.01}
+Tell the device currently talking on the IEC bus to stop talking.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_iecll_untalk()! \\ \hline
-Purpose & Send the UNTALK command to all devices and drop ATN \\ \hline
+Purpose & Send the {\sc untalk} command to all devices and drop ATN \\ \hline
 \end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Send the UNTALK command
+sys_iecll_untalk();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Send the UNTALK command
+    jsl sys_iecll_untalk
+\end{verbatim}
+
 
 \subsection*{sys\_iecll\_unlisten -- 0xFFE154 -- v1.01}
+Tell all devices listening on the IEC bus to stop listening.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_iecll_unlisten()! \\ \hline
-Purpose & Send the UNLISTEN command to all devices \\ \hline
+Purpose & Send the {\sc unlisten} command to all devices \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Send the UNLISTEN command
+sys_iecll_unlisten();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Send the UNLISTEN command
+    jsl sys_iecll_unlisten
+\end{verbatim}
+
 \subsection*{sys\_iecll\_in -- 0xFFE134 -- v1.01}
+Wait for and receive a byte from the current talker on the IEC bus.
+
+NOTE: this transfer uses the default, low speed protocol of the IEC bus.
+Currently, higher speed protocols like JiffyDOS and C128 mode are not supported.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!uint8_t sys_iecll_in()! \\ \hline
 Purpose & Try to get a byte from the IEC bus \\ \hline
 Returns & uint8\_t the byte read \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Receive a byte from the current IEC bus talking device
+uint8_t data = sys_iecll_in();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Receive a byte from the current IEC bus talking device
+    jsl sys_iecll_in
+    ; A[0..8] contains the byte
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_eoi -- 0xFFE138 -- v1.01}
+Check to see if the data byte received from the IEC bus using \lstinline|sys_iecll_in| was the
+last byte the talker is going to transmit (the end-of-interaction or EOI byte).
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!short sys_iecll_eoi()! \\ \hline
 Purpose & Check to see if the last byte read was an EOI byte \\ \hline
 Returns & short 0 if not EOI, any other number if EOI \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Read data bytes from the talker until we get the EOI flag
+do {
+    uint8_t data = sys_iecll_in();
+
+    // Do something with the data byte...
+} while(!sys_iecll_eoi());
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+read_in:
+    jsl sys_iecll_in    ; Get a byte from the IEC talker
+
+    ; Do somethinig with the data byte...
+
+    ; Check to see if we got the last byte from the talker
+    jsl sys_iecll_eoi
+    beq read_in         ; No... keep reading bytes...=
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_out -- 0xFFE13C -- v1.01}
+Send a byte to all the devices listening on the IEC bus.
+
+NOTE: this transfer uses the default, low speed protocol of the IEC bus.
+Currently, higher speed protocols like JiffyDOS and C128 mode are not supported.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_iecll_out(uint8_t byte)! \\ \hline
 Purpose & Send a byte to the IEC bus. Actually sends the previous byte and queues the current byte. \\ \hline
 byte & the byte to send \\ \hline
 \end{tabular}\end{table}
 
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Send a byte to all the listeners on the IEC bus
+uint8_t data = 0x41;
+sys_iecll_out(data);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Send a byte to all the listeners on the IEC bus
+    lda #$41
+    jsl sys_iecll_out
+\end{verbatim}
+
+
 \subsection*{sys\_iecll\_reset -- 0xFFE158 -- v1.01}
+Toggle the RESET line on the IEC bus. This should trigger all IEC bus devices to reset.
+
+\bigskip
+
 \begin{table}[!h]\begin{tabular}{|l||l|} \hline
 Prototype & \lstinline!void sys_iecll_reset()! \\ \hline
 Purpose & Assert and release the reset line on the IEC bus \\ \hline
 \end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Reset all devices on the IEC bus
+sys_iecll_reset();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Reset all devices on the IEC bus
+    jsl sys_iecll_reset
+\end{verbatim}
