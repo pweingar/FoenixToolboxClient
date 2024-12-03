@@ -77,9 +77,18 @@ void parse(char * line) {
             cmd_dir(path);
             return;
 
+		} else if (strcmp(tok, "$") == 0) {
+			cmd_cbm_dir();
+			return;
+
         } else if (strcmp(tok, "more") == 0) {
             char * path = strtok(NULL, " ");
             cmd_more(path);
+            return;
+
+        } else if (strcmp(tok, "set-font") == 0) {
+            char * path = strtok(NULL, " ");
+            cmd_set_font(path);
             return;
 
         } else if (strcmp(tok, "ren") == 0) {

@@ -53,4 +53,17 @@ extern void cmd_run(char * path);
  */
 extern void cmd_bye();
 
+/**
+ * @brief Read the directory listing from the IEC drive #8
+ * 
+ */
+extern void cmd_cbm_dir();
+
+/**
+ * @brief Load a font file as the current font
+ * 
+ * @param path the path to the FON file
+ */
+extern void cmd_set_font(const char * path);
+
 #endif

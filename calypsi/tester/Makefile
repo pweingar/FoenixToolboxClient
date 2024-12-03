@@ -11,12 +11,13 @@ AS=as65816
 LD=ln65816
 AR=nlib
 
-INCLUDES=-I.
+INCLUDES=-I. -I./include
 CFLAGS=$(INCLUDES) --code-model large --data-model large
-ASFLAGS=$(INCLUDES) --data-model large --code-model large
-LDFLAGS=f256-plain.scm clib-lc-ld.a --rtattr printf=medium --target=f256 --hosted --list-file tester.map
+ASFLAGS=$(INCLUDES) --data-model large --code-model large -l
+LDFLAGS=f256-plain.scm --cstartup=ramstartup --rtattr printf=medium --target=f256 --hosted --list-file tester.map
 
-SRCS = tester.c test_cmds.c header.s
+
+SRCS = tester.c test_cmds.c header.s ram-startup.s
 OBJS = $(patsubst %.s,%.o,$(patsubst %.c,%.o,$(SRCS)))
 OBJS4RM = $(subst /,\\,$(OBJS))
 LIBS = ../lib/toolbox.a

@@ -18,8 +18,8 @@ the group and bit numbers packed into an 8-bit value.}
 In addition to controlling interrupts at a device level ({\it e.g.} the serial port interrupt), the Toolbox also has routines to allow a program to
 enable or disable IRQ processing at the CPU level. The \lstinline!int_enable_all!, \lstinline!int_disable_all!, and \lstinline!int_restore_all!,
 functions work at the CPU level and do not affect the mask bits in the F256's interrupt controller. The \lstinline!int_enable!, and \lstinline!int_disable!
-functions work at the level of the individual device interrupt in the interrupt controller.
-
+functions work at the level of the individual device interrupt in the interrupt controller. 
+ 
 \subsection*{Overriding Toolbox Interrupt Handling}
 The Toolbox takes care of the details of the F256's interrupt controller for user programs, but that comes at the cost of overhead.
 Many programs will need more efficient control over interrupts and will prefer to manage interrupts for themselves, without the 

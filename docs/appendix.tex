@@ -394,8 +394,10 @@ work correctly.
 			{\tt 0x00:FDF8 - 0x00:FDFF} & Reserved \\ \hline
 			{\tt 0x00:FE00 - 0x00:FEFF} & Toolbox Direct Page \\ \hline
 			{\tt 0x00:FF00 - 0x00:FFFF} & Toolbox Bootstrap Shadow \\ \hline
-			{\tt 0x01:0000 - 0x06:FFFF} & {\bf User Memory} \\ \hline	
-			{\tt 0x07:0000 - 0x07:FFFF} & Toolbox Memory \\ \hline
+			{\tt 0x01:0000 - 0x06:FFFF} & {\bf User Memory} (F256jr, F256Ke) \\ \hline	
+			{\tt 0x01:0000 - 0x0E:FFFF} & {\bf User Memory} (F256K2e) \\ \hline	
+			{\tt 0x07:0000 - 0x07:FFFF} & Toolbox Memory (F256jr, F256Ke) \\ \hline
+			{\tt 0x0F:0000 - 0x0F:FFFF} & Toolbox Memory (F256K2e) \\ \hline
 			{\tt 0xFC:0000 - 0xFF:DFFF} & Toolbox Firmware \\ \hline
 			{\tt 0xFF:E000 - 0xFF:FEFF} & Toolbox Jump Table \\ \hline
 			{\tt 0xFF:FF00 - 0xFF:FFFF} & Toolbox Bootstrap and Vectors \\ \hline

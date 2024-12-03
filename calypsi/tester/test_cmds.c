@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <ctype.h>
+#include <calypsi/intrinsics65816.h>
 
 #include "../lib/include/toolbox.h"
 #include "test_cmds.h"
@@ -124,7 +126,7 @@ void cmd_dump(uint32_t start, uint16_t size) {
         }
 
         count++;
-        if (count > 16) {
+        if (count >= 16) {
             hex_data[count] = 0;
             ascii_data[count] = 0;
             count = 0;
@@ -181,4 +183,74 @@ void cmd_run(char * path) {
  */
 void cmd_bye() {
 	sys_proc_exit(123);
+}
+
+char buffer[255];
+
+/**
+ * @brief Read the directory listing from the IEC drive #8
+ * 
+ */
+void cmd_cbm_dir() {
+	uint8_t device = 8;
+
+	sys_iecll_ioinit();
+	
+	// Open the file $
+	printf("Open: $\n");
+	sys_iecll_listen(device);
+	sys_iecll_listen_sa(0xf0);
+	sys_iecll_out('$');
+	sys_iecll_out('0');
+	sys_iecll_out('/');
+	sys_iecll_out('/');
+	sys_iecll_out(':');
+	sys_iecll_out('*');
+	sys_iecll_unlisten();
+
+	// Read the bytes
+	printf("Waiting for bytes\n");
+	__disable_interrupts();
+	sys_iecll_talk(device);
+	sys_iecll_talk_sa(0x60);
+	int x = 0;
+	do {
+		uint8_t b = sys_iecll_in();
+		buffer[x++] = b;
+	} while(!sys_iecll_eoi());
+	sys_iecll_untalk();
+	__enable_interrupts();
+
+	// Print the directory data
+	cmd_dump((uint32_t)buffer, x);
+	
+	// Close the file
+	printf("\nClose: $... ");
+	sys_iecll_listen(device);
+	sys_iecll_listen_sa(0xe0);
+	sys_iecll_unlisten();
+
+	printf("Done.\n");
+}
+
+uint8_t font_data[0x2000];
+
+/**
+ * @brief Load a font file as the current font
+ * 
+ * @param path the path to the FON file
+ */
+void cmd_set_font(const char * path) {
+	uint32_t start = 0;
+	
+	short result = sys_fsys_load(path, (uint32_t)font_data, &start);
+	if (result < 0) {
+		printf("Could not load the font file: %s\n", sys_err_message(result));
+
+	} else {
+		result = sys_txt_set_font(0, 8, 8, font_data);
+		if (result < 0) {
+			printf("Could not set font: %s\n", sys_err_message(result));
+		}
+	}
 }
