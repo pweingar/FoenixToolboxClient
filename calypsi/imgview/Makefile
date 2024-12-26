@@ -11,8 +11,8 @@ AS=as65816
 LD=ln65816
 AR=nlib
 
-INCLUDES=-I. -I./include
-CFLAGS=$(INCLUDES) --code-model large --data-model large --target=f256
+INCLUDES=-I../../../Calypsi-65816-f256/include -I. -I./include
+CFLAGS=$(INCLUDES) --code-model large --data-model large --target=f256 -l
 ASFLAGS=$(INCLUDES) --data-model large --code-model large
 LDFLAGS=f256-plain.scm --cstartup=ramstartup --rtattr printf=medium --target=f256 --hosted --list-file imgview.map
 

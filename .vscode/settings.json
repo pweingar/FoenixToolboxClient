@@ -4,6 +4,10 @@
 		"*.forth": "forth",
 		"string.h": "c",
 		"test_cmds.h": "c",
-		"memory": "cpp"
+		"memory": "cpp",
+		"array": "c",
+		"string": "c",
+		"string_view": "c",
+		"vector": "c"
 	}
 }

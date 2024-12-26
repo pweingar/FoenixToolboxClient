@@ -1,7 +1,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
+#include <math.h>
 #include <calypsi/intrinsics65816.h>
 
 #include "../lib/include/toolbox.h"
@@ -19,6 +21,14 @@
 void cmd_set_border_size(short x, short y) {
 	printf("<%d, %d>\n", x, y);
     sys_txt_set_border(0, x, y);
+
+	t_rect r;
+	r.origin.x = 0;
+	r.origin.y = 0;
+	r.size.width = 0;
+	r.size.height = 0;
+
+	sys_txt_set_region(0, &r);
 }
 
 /**
@@ -127,7 +137,7 @@ void cmd_dump(uint32_t start, uint16_t size) {
 
         count++;
         if (count >= 16) {
-            hex_data[count] = 0;
+            hex_data[count * 2] = 0;
             ascii_data[count] = 0;
             count = 0;
 
@@ -187,6 +197,49 @@ void cmd_bye() {
 
 char buffer[255];
 
+void cbm_directory(uint8_t * data) {
+	int index = 2;	// Start by skipping over the load address
+
+	uint16_t next_line = 0;
+	do {
+		// Get the address of the next line
+		next_line = (uint16_t)data[index] | ((uint16_t)data[index+1]) << 8;
+		index += 2;
+
+		if (next_line != 0) {
+			char line[128];
+
+			// Get the line number
+			uint16_t line_number = (uint16_t)data[index] | ((uint16_t)data[index+1]) << 8;
+			index += 2;
+
+			if (line_number == 0) {
+				// Handle the disk label
+				index += 2;		// Skip over the initial character and the quote mark
+				int j = 0;
+				while(data[index] != 0x22) {
+					line[j++] = data[index++];
+				}
+				line[j] = 0;
+
+				// Print the label
+				printf("Disk: %s\n", line);
+
+				// Skip remaining characters to the end of line
+				while (data[index++] != 0) ;
+
+			} else {
+				// Handle any other line
+				strcpy(line, (char *)(data + index));
+				printf("%6d\t%s\n", line_number, line);
+				index += strlen(line) + 1;
+			}
+
+
+		}
+	} while(next_line != 0);
+}
+
 /**
  * @brief Read the directory listing from the IEC drive #8
  * 
@@ -222,7 +275,7 @@ void cmd_cbm_dir() {
 	__enable_interrupts();
 
 	// Print the directory data
-	cmd_dump((uint32_t)buffer, x);
+	cbm_directory((uint8_t *)buffer);
 	
 	// Close the file
 	printf("\nClose: $... ");
@@ -253,4 +306,130 @@ void cmd_set_font(const char * path) {
 			printf("Could not set font: %s\n", sys_err_message(result));
 		}
 	}
+}
+
+const char * spaces[] = {
+	"",
+	" ",
+	"  ",
+	"   ",
+	"    ",
+	"     ",
+	"      ",
+	"       ",
+	"        ",
+	"         ",
+	"          ", // 10
+	"           ",
+	"            ",
+	"             ",
+	"              ",
+	"               ",
+	"                ",
+	"                 ",
+	"                  ",
+	"                   ",
+	"                    ", // 20
+	"                     ",
+	"                      ",
+	"                       ",
+	"                        ",
+	"                         ",
+	"                          ",
+	"                           ",
+	"                            ",
+	"                             ",
+	"                              ", // 30
+	"                               ",
+	"                                ",
+	"                                 ",
+	"                                  ",
+	"                                   ",
+	"                                    ",
+	"                                     ",
+	"                                      ",
+	"                                       ",
+	"                                        "
+};
+
+void scroll_message(const char * message) {
+	t_rect r;
+	sys_txt_get_region(0, &r);
+
+	int size = strlen(message);
+	float magnitude = (r.size.width - 2 - size) / 2.0;
+	int offset = (r.size.width - size) / 2;
+
+	for (int line = 0; line < 1000; line++) {
+		float y = 2 * 3.14159 * line / 100.0;
+		int x = (int)(magnitude * sin(y));
+
+		int column = offset + x;
+		if (column < 40) {
+			printf("%s%s\n", spaces[column], message);	
+		} else {
+			printf("%s%s%s\n", spaces[40], spaces[column - 40], message);	
+		}
+
+		if (sys_chan_ioctrl(0, IOCTRL_CON_BREAK, 0, 0)) {
+			// BREAK key was pressed... stop scrolling
+			break;
+		}
+	}
+}
+
+/**
+ * @brief Test the scrolling code in a window
+ */
+void cmd_test_scroll() {
+
+	sys_txt_set_cursor_visible(0, 0);
+
+	char * message = "Foenix!";
+	scroll_message("Foenix!");
+
+	sys_txt_set_cursor_visible(0, 1);
+}
+
+/**
+ * @brief Test the scrolling code in a window
+ */
+void cmd_test_scroll_window() {
+	unsigned char fore = 0;
+	unsigned char back = 0;
+
+	sys_txt_set_cursor_visible(0, 0);
+
+	// char * message = "Foenix!";
+	// scroll_message("Foenix!", 80);
+
+	t_rect r;
+	r.origin.x = 10;
+	r.origin.y = 10;
+	r.size.width = 60;
+	r.size.height = 40;
+	sys_txt_set_region(0, &r);
+	sys_txt_get_color(0, &fore, &back);
+
+	sys_txt_set_color(0, 1, 0);
+	
+	cmd_test_clear();
+
+	scroll_message("F256");
+
+	r.origin.x = 0;
+	r.origin.y = 0;
+	r.size.height = 0;
+	r.size.width = 0;
+	sys_txt_set_region(0, &r);
+	sys_txt_set_color(0, fore, back);
+
+	sys_txt_set_cursor_visible(0, 1);
+}
+
+/**
+ * Clear the screen
+ */
+void cmd_test_clear() {
+	printf("\e[2J\e[2H");
 }

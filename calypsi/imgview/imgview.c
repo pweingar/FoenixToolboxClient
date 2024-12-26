@@ -3,10 +3,10 @@
 #include <stdint.h>
 #include "../lib/include/toolbox.h"
 
-volatile bitmap_t * vky_bitmap0 = (bitmap_t *)0xf01100;
-
 const uint32_t palette_address = 0xf03000;
 const uint32_t image_address = 0x020000;
+
+uint8_t clut[1024];
 
 /**
  * @brief Try to load a file into RAM
@@ -22,11 +22,15 @@ short load_file(const char * path, uint32_t address) {
 		return fd;
 	}
 
+	printf("Opened: %s\n", path);
+
 	short n = 0;
 	do {
-		n = sys_chan_read(fd, (unsigned char *)address, 2048);
+		n = sys_chan_read(fd, (unsigned char *)address, 256);
 		if (address > 0) {
 			address += n;
+		} else {
+			break;
 		}
 	} while (n > 0);
 
@@ -48,20 +52,30 @@ short load_file(const char * path, uint32_t address) {
  */
 short load_image(const char * base_name) {
 	char path[80];
+	uint8_t * hw_clut = (uint8_t *)palette_address;
+	uint32_t start_addr = 0;
 
 	sprintf(path, "%s.pal", base_name);
-	short result = load_file(path, palette_address);
+	short result = load_file(path, (uint32_t)clut); // sys_fsys_load(path, (uint32_t)hw_clut, &start_addr);
 	if (result < 0) {
-		printf("Could not load palette file: %s\n", sys_err_message(result));
+		printf("Could not load palette file %s: %s\n", path, sys_err_message(result));
 		return result;
 	}
+
+	for (int i = 0; i < 4*256; i++) {
+		hw_clut[i] = clut[i];
+	}
+
+	printf("Loaded palette.\n");
 
 	sprintf(path, "%s.raw", base_name);
 	result = load_file(path, image_address);
 	if (result < 0) {
-		printf("Could not load image file: %s\n", sys_err_message(result));
+		printf("Could not load image file %s: %s\n", path, sys_err_message(result));
 		return result;
 	}
+
+	printf("Loaded image data.\n");
 
 	return 0;
 }
@@ -89,20 +103,26 @@ int main(int c, char * argv[]) {
 	sys_txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_BITMAP);
 
 	// Set resolution to 640x400 text / 320x200 graphics
-	sys_txt_set_resolution(0, 640, 400);
+	sys_txt_set_resolution(0, 640, 480);
 
 	// Setup layers... just make them all bitmaps
-	Vicky.layer0 = 0;
-	Vicky.layer1 = 1;
-	Vicky.layer2 = 2;
+	Vicky.layer0 = Layer_Bitmap0;
+	Vicky.layer1 = Layer_Bitmap1;
+	Vicky.layer2 = Layer_Bitmap2;
 
 	// Set the image address
-	vky_bitmap0->lut = 0;
-	vky_bitmap0->enable = 1;
-	vky_bitmap0->data = (vram_ptr)image_address;
+	Vicky.bitmap[0].lut = 0;
+	Vicky.bitmap[0].lut = 0;
+	Vicky.bitmap[0].enable = 1;
+	Vicky.bitmap[0].data = (vram_ptr)image_address;
+
+	for (uint16_t i = 0; i < (uint16_t)320 * (uint16_t)200; i++) {
+		uint8_t * data = (uint8_t *)image_address;
+		data[i] = 0;
+	}
 
 	do {
-		display_image("/sd0/pepeshan");
+		display_image("/sd0/pepeshan1");
 		display_image("/sd0/pepeshan2");
 		display_image("/sd0/pepeshan3");
 	} while (1);

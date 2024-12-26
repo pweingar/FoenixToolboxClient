@@ -66,4 +66,19 @@ extern void cmd_cbm_dir();
  */
 extern void cmd_set_font(const char * path);
 
+/**
+ * @brief Test the scrolling code
+ */
+extern void cmd_test_scroll();
+
+/**
+ * @brief Test the scrolling code in a window
+ */
+extern void cmd_test_scroll_window();
+
+/**
+ * Clear the screen
+ */
+extern void cmd_test_clear();
+
 #endif

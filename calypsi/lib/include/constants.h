@@ -77,6 +77,18 @@
 #define IOCTRL_GET_BLOCK_SIZE		3	/* Get erase block size (needed at FF_USE_MKFS == 1) */
 
 /*
+ * Console IOCTRL commands
+ */
+
+#define IOCTRL_CON_ANSI_ON  0x01            /* IOCTRL Command: turn on ANSI terminal codes */
+#define IOCTRL_CON_ANSI_OFF 0x02            /* IOCTRL Command: turn off ANSI terminal codes */
+#define IOCTRL_CON_ECHO_ON  0x03            /* IOCTRL Command: turn on echo of input characters */
+#define IOCTRL_CON_ECHO_OFF 0x04            /* IOCTRL Command: turn off echo of input characters */
+#define IOCTRL_CON_BREAK    0x05            /* IOCTRL Command: return the status of the keyboard BREAK */
+#define IOCTRL_CON_CURS_ON  0x06            /* IOCTRL Command: show the cursor */
+#define IOCTRL_CON_CURS_OFF 0x07            /* IOCTRL Command: hide the cursor */
+
+/*
  * Constants for the screen modes
  */
 

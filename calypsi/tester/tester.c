@@ -54,8 +54,10 @@ void parse(char * line) {
     if (tok) {
         if (strcmp(tok, "set-border-size") == 0) {
             tok = strtok(NULL, " ");
+			printf("Got size parameter: [%s]\n", tok);
             if (tok) {
                 short size = atoi(tok);
+				printf("Converted size parameter: [%d]\n", size);
                 cmd_set_border_size(size, size);
                 return;
             }
@@ -109,6 +111,18 @@ void parse(char * line) {
             char * path = strtok(NULL, " ");
             cmd_run(path);
             return;
+
+		} else if (strcmp(tok, "scroll") == 0) {
+			cmd_test_scroll();
+			return;
+
+		} else if (strcmp(tok, "scroll-window") == 0) {
+			cmd_test_scroll_window();
+			return;
+
+		} else if (strcmp(tok, "clear") == 0) {
+			cmd_test_clear();
+			return;
 
         } else if (strcmp(tok, "bye") == 0) {
 			cmd_bye();
