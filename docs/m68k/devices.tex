@@ -1,0 +1,55 @@
+\chapter{Devices}
+Devices on the Foenix computers fall into one of three main categories: channel devices, block devices, and files (which are really special purpose channel devices).
+
+\section{Channel Devices}
+Channel devices are predominantly sequential, byte oriented devices. They are essentially byte streams. A program can read or write a series of bytes from or to the device. A channel can have the notion of a ``cursor'' which represents the point where a read or write will happen. Examples of channel devices include the console, the serial ports, and files.
+
+Currently, the only fully supported channel devices are open files, the keyboard, and the screen. In the future, there should be full support for the serial ports, the parallel port, and the MIDI ports. Channel devices are assigned as shown in table~\ref{tab:chan_devs}:
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}{|l||l|} \hline
+            Number & Device \\ \hline\hline
+            0 & Main console (keyboard and main screen) \\ \hline
+            1 & Reserved \\ \hline
+            2 & Serial Port 1 \\ \hline
+            3 -- 5 & Reserved \\ \hline
+            6 & Files \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{Channel devices}
+    \label{tab:chan_devs}
+\end{table}
+
+By default, channel 0 is open automatically to device 0 (the console) at boot time.
+
+\section{Block Devices}
+Block devices organize their data into blocks of bytes. A block may be read from or written to a block device, and blocks maybe accessed in any order desired. The FA2560K2s comes with two block devices: the internal and external SD cards (see table~\ref{tab:block_devs}).
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}{|l||l|} \hline
+            Number & Device \\ \hline\hline
+            0 & sd0---External SD card \\ \hline
+            1 & sd1---Internal SD card \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{Channel devices}
+    \label{tab:block_devs}
+\end{table}
+
+\section{File Channels}
+Files represent a special channel pseudo-device. Although files are stored on block devices, they may be open as file channels, which may be accessed like a channel device. There is a special file channel driver, which converts channel reads and writes on a file to the appropriate block calls. Access to these file channels is managed in part through the file system calls listed below.
+
+\subsection*{Paths}
+File and directory names follow the Unix style path conventions.
+That is, the forward slash (/) is used as a separator, and drives are treated as directories (``/sd'', ``/hd'', {\it etc.}).
+FAT32 long file names are supported, but not Unicode characters.
+The special path names ``.'' and ``..'' are supported to specify a path relative to the current path. Example paths are:
+
+\begin{verbatim}
+    /sd0/hello.txt
+    /sd1/system/format.elf
+    ../games/HauntedCastle/start	
+\end{verbatim}
+

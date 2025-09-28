@@ -1,0 +1,168 @@
+\chapter{Extending the System}
+Foenix Toolbox is designed to be somewhat extensible. Since it is meant to be small and stay as much out of the way of the user programs as possible,
+Foenix Toolbox does not have all the features that absolutely everyone will want.
+Therefore, there are four main ways that the user can extend the capabilities of Foenix Toolbox: channel device drivers, block device drivers,
+keyboard translation tables, and file loaders.
+
+\section{Channel Device Drivers}
+Channel device drivers provide the functions needed by Foenix Toolbox to support a channel opened on a device. With some exceptions, each channel system call is routed through the channel to the correct channel driver function. Channel drivers can be added to the system using the \verb+sys_chan_register+ call, specifying all of the relevant information about the driver using a structure:
+
+\begin{lstlisting}
+typedef struct s_dev_chan {
+    short number;           // The number of the device (assigned by registration)
+    char * name;            // The name of the device
+    short (*init)();        // Initialize the device
+    short (*open)(p_channel chan, const uint8_t * path, short mode); //  -- open a channel for the device
+    short (*close)(p_channel chan);	// Called when a channel is closed
+    short (*read)(p_channel chan, uint8_t * buf, short size);	// Read a a buf from the device
+    short (*readline)(p_channel chan, uint8_t * buf, short size);	// Read a line of text from the device
+    short (*read_b)(p_channel chan);      //  -- read a single uint8_t from the device
+    short (*write)(p_channel chan, const uint8_t * buf, short size);	// Write a buf to the device
+    short (*write_b)(p_channel chan, const uint8_t b) ; // Write a single uint8_t to the device
+    short (*status)(p_channel chan); // Get the status of the device
+    short (*flush)(p_channel chan); // Ensure that any pending writes to teh device have been completed
+    short (*seek)(p_channel chan, long position, short base); // Attempt to move the "cursor" in the channel
+    short (*ioctrl)(p_channel chan, short cmd, uint8_t * buf, short size); // Issue a command to the device
+} t_dev_chan, *p_dev_chan;
+\end{lstlisting}
+
+Where \verb+p_channel+ is a pointer to a channel structure, which maps an open channel to its device and provides space for the channel driver to store data relevant to that particular channel. The channel device drivers are passed this structure directly by the channel system calls, rather than the channel number used by user programs.
+
+\begin{lstlisting}
+struct s_channel {
+    short number;           // The number of the channel
+    short dev;              // The number of the channel's device
+    uint8_t data[32];       // A block of state data that the channel code can use for its own purposes
+};
+\end{lstlisting}
+
+To implement a driver for a new channel device, all the functions should be implemented (if a function is not needed,
+it should still be implemented but return a 0). Then a \verb+s_chan_dev+ structure should be allocated and filled out,
+with the number being the number of the device to support, and name points to a suitable name for the device.
+
+Most of the functions needed are directly mapped to the channel system calls of the same name, and they simply perform
+the operations needed for those calls. Three functions should be called out for special consideration:
+
+The \verb+init+ function performs initialization functions. It is called once per device.
+This can be a place for setting up the device itself or installing interrupt handlers for the device.
+
+The \verb+open+ function is called when the user program opens a channel, after a channel structure has been allocated for the channel.
+This is the correct place for setting up a connection for a specific transaction on the device. This is another point where interrupt handlers might be installed or turned on, or when specific connection settings are made in the device (like serial baud rate).
+
+The \verb+close+ function is called when the user program closes a previously opened channel.
+This function should perform any housekeeping functions needed before the channel is returned to the kernel's pool.
+In particular, if the device buffers write operations, any writes that are still pending should be written to the device.
+
+\section{Block Device Drivers}
+Block device drivers are used by Foenix Toolbox to provide block level access to block devices like the SD card, floppy drive, and IDE/PATA hard drive.
+The main use of block device drivers is the FatFS file system, which is used to provide file channels.
+Block drivers can be added to the system similarly to channel device drivers by implementing the functions needed by Foenix Toolbox and
+registering them using the \verb+sys_bdev_register+ call.
+The information about the block device is provided through a \verb+s_block_dev+ structure:
+
+\begin{lstlisting}
+struct s_dev_block {
+    short number;           														// The number of the device (assigned by registration)
+    char * name;            														// The name of the device
+    void * data;																	// Device-specific data block
+    short (*init)(struct s_dev_block *);        									// Initialize the device
+    short (*read)(struct s_dev_block *, long lba, uint8_t * buf, short size);	// Read a block from the device
+    short (*write)(struct s_dev_block *, long lba, const uint8_t * buf, short size);	// Write a block to the device
+    short (*status)(struct s_dev_block *);      									// Get the status of the device
+    short (*flush)(struct s_dev_block *);      										// Completes any pending writes to the device
+    // Issue a command to the device
+    short (*ioctrl)(struct s_dev_block *, short cmd, unsigned char * buf, short size);
+}
+\end{lstlisting}
+
+One difference with the channel drivers is that a block driver is tied to its specific device, therefore the handler functions do not take a device number or other structure.
+
+As before, when registering a driver, the device number is provided in the number field, and a useful name is provided in \verb+name+. The \verb+init+ function will be called once to allow the driver to initialize the device, install interrupt handlers, or perform other functions.
+
+Otherwise, \verb+read+ and \verb+write+ perform the \verb+getblock+ and \verb+putblock+ functions, and take a block address, a buffer of bytes, and a buffer size as arguments. The \verb+status+ and \verb+flush+ functions map to the \verb+sys_bdev_status+ and \verb+sys_bdev_flush+ calls. And finally, \verb+ioctrl+ maps to the \verb+sys_bdev_ioctrl+ function, and takes a command number, a buffer of bytes, and a size of the buffer as arguments.
+
+\section{Keyboard Translation Tables}
+By default, Foenix Toolbox supports the US standard QWERTY style keyboard, but other keyboards can be used by providing custom translation tables to map from Foenix scan codes to 8-bit character codes. These tables can be activated in the kernel by calling the \verb+sys_kbd_layout+ system call, providing it with the appropriate translation tables. There are eight tables that are needed, each are 128 bytes long, and they are provided as consecutive tables in the following order:
+
+% TODO: Make sure we still need all of these tables.
+
+\begin{enumerate}
+    \item \verb+UNMODIFIED+: This table maps scan codes to characters when no modifier keys are pressed.
+    \item \verb+SHIFT+: This table maps scan codes when either SHIFT key is pressed.
+    \item \verb+CTRL+: This table maps scan codes when either CTRL key is pressed.
+    \item \verb+CTRL_SHIFT+: This table maps scan codes when SHIFT and CTRL are both pressed.
+    \item \verb+CAPS+: This table maps scan codes when CAPSLOCK is down, but SHIFT is not pressed.
+    \item \verb+CAPS_SHIFT+: This table maps scan codes when CAPSLOCK is down and SHIFT is pressed.
+    \item \verb+ALT+: This table maps scan codes when either ALT is pressed.
+    \item \verb+ALT_SHIFT+: This table maps scan codes when ALT is pressed and either SHIFT or CAPSLOCK are in effect (but not both).
+\end{enumerate}
+
+For keys on the right side of the keyboard (cursor keys, number pad, INSERT, etc.), NUMLOCK being down causes the \verb+CAPS+ or
+\verb+CAPS_SHIFT+ tables to be used. For those keys, CTRL and ALT will have no effect when NUMLOCK is down.
+
+In the current code, character codes 0x80 through 0x95 are reserved. These codes are used to designate special keys like function keys,
+cursor keys, {\it etc}. This means that Foenix Toolbox cannot directly map characters using those code points to key presses,
+but in the various ISO-8859 and related standards, those code points are reserved for control codes.
+Also, this design choice allows for maximum flexibility in keyboard layouts, since all these keys can be mapped to whatever scan codes the user desires.
+See table~\ref{tbl:special_key_codes} for the detailed mapping.
+
+\begin{table}[h]
+    \begin{center}
+        \begin{tabular}{|l|l|} \hline
+            Key & Code \\ \hline\hline
+            Cursor UP & 0x86 \\ \hline
+            Cursor Down & 0x89 \\ \hline
+            Cursor Left & 0x87 \\ \hline
+            Cursor Right & 0x88 \\ \hline
+            HOME & 0x80 \\ \hline
+            INS & 0x81 \\ \hline
+            DELETE & 0x82 \\ \hline
+            END & 0x83 \\ \hline
+            PAGE UP & 0x84 \\ \hline
+            PAGE DOWN & 0x85 \\ \hline
+            F1 & 0x8A \\ \hline
+            F2 & 0x8B \\ \hline
+            F3 & 0x8C \\ \hline
+            F4 & 0x8D \\ \hline
+            F5 & 0x8E \\ \hline
+            F6 & 0x8F \\ \hline
+            F7 & 0x90 \\ \hline
+            F8 & 0x91 \\ \hline
+            F9 & 0x92 \\ \hline
+            F10 & 0x93 \\ \hline
+            F11 & 0x94 \\ \hline
+            F12 & 0x95 \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{Special Key Codes}
+    \label{tbl:special_key_codes}
+\end{table}
+
+\section{File Loaders}
+Out of the box, Foenix Toolbox supports only two simple file formats executables: PGX, PGZ, and ELF. Others may be supported in the future.
+Since this may not meet the needs of a user, the loading and execution of files may be extended using the \verb+sys_fsys_register_loader+ system call.
+This call takes an extension to map to a loader, and a pointer to a loader routine.
+
+A loader routine can be very simple: it takes a channel to read from, an address to use as an optional destination,
+and a pointer to a long variable in which to store any starting address specified by an executable file.
+
+To actually load the file, the loader just has to read the data it needs from the already open file channel provided.
+If a destination address was provided by the caller (any value other than 0), the loader should use that as the destination address,
+otherwise it should determine from the file or its own algorithm a reasonable starting address.
+
+Once it has finished loading the file, if it had determined that the file is executable and knows the starting address,
+it should store that at the location provided by the start pointer.
+
+Finally, if all was successful, it should return a 0 to indicate success. Otherwise, it should return an appropriate error number.
+
+\subsection*{Example File Loader}
+\begin{lstlisting}
+short fsys_pgz_loader(short chan, long destination, long * start) {
+    // Use the channel calls to read the input file and load into memory
+    // ...
+
+    // If sucessful and found a start address:
+    *start = start_address;
+    return 0;
+}
+\end{lstlisting}

@@ -1,0 +1,428 @@
+\chapter{Appendix}
+
+\section{Console IOCTRL Commands}
+The console channel driver supports the following commands for \verb+sys_chan_ioctrl+.
+None of these IOCTRL commands require a buffer, so passing NULL for the buffer and 0 for the size is recommended.
+
+\begin{enumerate}
+	\item \verb+CON_IOCTRL_ANSI_ON+: Turn on ANSI escape sequence processing.\footnote{ANSI processing is on by default.}
+	\item \verb+CON_IOCTRL_ANSI_OFF+: Turn off ANSI escape sequence processing.
+	\item \verb+CON_IOCTRL_ECHO_ON+: Turn on character echoing for \verb+sys_chan_read_b+.\footnote{Echo is on be default.}
+	\item \verb+CON_IOCTRL_ECHO_OFF+: Turn off character echoing for \verb+sys_chan_read_b+.
+	\item \verb+CON_IOCTRL_BREAK+: Check to see if the user has pressed the BREAK key sequence.\footnote{{\tt sys\_chan\_ioctrl} will return a non-zero value if the BREAK key was pressed, and 0 if not. On all Foenix machines, CTRL-C (code point 0x03) will be treated as the BREAK key. On the A2560K, the combination Foenix-ESC will also work as the BREAK key. On the F256K, the RUN/STOP key will be treated as the BREAK key.}
+	\item \verb+CON_IOCTRL_CURS_ON+: The text mode cursor should be visible.\footnote{Cursor is on by default.}
+	\item \verb+CON_IOCTRL_CURS_OFF+: The text mode cursor should be hidden
+	\item \verb+IOCTRL_CRLF_XLATE_ON+: Turn on conversion between CR and CRLF.
+	\item \verb+IOCTRL_CRLF_XLATE_OFF+: Turn off conversion between CR and CRLF.
+\end{enumerate}
+
+\section{ANSI Terminal Codes}
+Foenix Toolbox supports a basic subset of the VT102 ANSI terminal codes. The following escape sequences are shown in table~\ref{tbl:ansi_terminal_codes}.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Sequence & Name & Function \\ \hline\hline
+		\verb+ESC [ # @+ & ICH & Insert characters \\ \hline
+		\verb+ESC [ # A+ & CUU & Move the cursor up \\ \hline
+		\verb+ESC [ # B+ & CUF & Move the cursor forward \\ \hline
+		\verb+ESC [ # C+ & CUB & Move the cursor back \\ \hline
+		\verb+ESC [ # D+ & CUD & Move the cursor down \\ \hline
+		\verb+ESC [ # J+ & ED & Erase the screen \\ \hline
+		\verb+ESC [ # K+ & EL & Erase the line \\ \hline
+		\verb+ESC [ # P+ & DCH & Delete characters \\ \hline
+		\verb+ESC [ # ; # H+ & CUP & Set the cursor position \\ \hline
+		\verb+ESC [ # m+ & SGR & Set the graphics rendition \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI Terminal Codes}
+    \label{tbl:ansi_terminal_codes}
+\end{table}
+
+For the SGR sequence, a fairly limited set of codes are currently supported, mainly to do with the color and intensity of the text (see table:~\ref{tbl:ansi_sgr_codes}).
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Code & Function \\ \hline\hline
+		0 & Reset to defaults \\ \hline
+		1 & High intensity / Bold \\ \hline
+		2 & Low intensity / Normal \\ \hline
+		22 & Normal \\ \hline
+		30 -- 37 & Set foreground color \\ \hline
+		40 -- 47 & Set background color \\ \hline
+		90 -- 97 & Set bright foreground color \\ \hline
+		100 -- 107 & Set bright background color \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI SGR Codes}
+    \label{tbl:ansi_sgr_codes}
+\end{table}
+
+NOTE: If the program does not want the console to interpret ANSI codes, this feature can be turned off by calling \verb+sys_chan_ioctrl+ on the console channel to be changed. A command of 0x01 will turn ANSI interpretation on, while a command of 0x02 will turn it off. When ANSI interpretation is turned off, only the core ASCII control characters will still be recognized: 0x08 (backspace), 0x09 (TAB), 0x0A (linefeed), and 0x13 (carriage return).
+
+For key presses, escape codes (see table~\ref{tbl:ansi_key_codes}) are sent to the calling program,
+when one of the \verb+sys_chan_read+ functions is used on the channel.
+Note that this feature is always on in the current system. Also, in the following codes, there are no actual spaces.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+		Key & Code \\ \hline\hline
+		ESC & \verb+ESC ESC+ \\ \hline
+		Cursor UP & \verb+ESC [ # A+ \\ \hline
+		Cursor Down & \verb+ESC [ # B+ \\ \hline
+		Cursor Left & \verb+ESC [ # C+ \\ \hline
+		Cursor Right & \verb+ESC [ # D+ \\ \hline
+		HOME & \verb+ESC [ 1 ; # ~+ \\ \hline
+		INS & \verb+ESC [ 2 ; # ~+ \\ \hline
+		DELETE & \verb+ESC [ 3 ; # ~+ \\ \hline
+		END & \verb+ESC [ 4 ; # ~+ \\ \hline
+		PAGE UP & \verb+ESC [ 5 ; # ~+ \\ \hline
+		PAGE DOWN & \verb+ESC [ 8 ; # ~+ \\ \hline
+		F1 & \verb+ESC [ 11 ; # ~+ \\ \hline
+		F2 & \verb+ESC [ 12 ; # ~+ \\ \hline
+		F3 & \verb+ESC [ 13 ; # ~+ \\ \hline
+		F4 & \verb+ESC [ 14 ; # ~+ \\ \hline
+		F5 & \verb+ESC [ 15 ; # ~+ \\ \hline
+		F6 & \verb+ESC [ 17 ; # ~+ \\ \hline
+		F7 & \verb+ESC [ 18 ; # ~+ \\ \hline
+		F8 & \verb+ESC [ 19 ; # ~+ \\ \hline
+		F9 & \verb+ESC [ 20 ; # ~+ \\ \hline
+		F10 & \verb+ESC [ 21 ; # ~+ \\ \hline
+		F11 & \verb+ESC [ 23 ; # ~+ \\ \hline
+		F12 & \verb+ESC [ 24 ; # ~+ \\ \hline
+		\end{tabular}
+	\end{center}
+    \caption{ANSI Key Codes}
+    \label{tbl:ansi_key_codes}
+\end{table}
+
+% Key
+% Code
+
+
+% The “#” in the sequences above represent an optional modifier code. If SHIFT, CTRL, or ALT is pressed with the key, the number sign is replaced with a decimal number representing a bitfield of the modifier keys, followed by a semicolon. The bit values are: SHIFT = 1, ALT = 2, CTRL = 4, and OS (Foenix) = 8. 
+
+\section{Keyboard Scan codes}
+Foenix Toolbox uses the same Foenix scan codes that the original 65816 Foenix kernel and Foenix/MCP used.
+These scan codes are derived from the standard ``set 1'' scan codes with modifications to get the scan codes to fit within a single byte.
+The base scan codes for a US QWERTY keyboard are listed below.
+
+When a key is pressed or released, bits 0 -- 6 are the same, and follow the table below.
+A ``make'' scan code is sent when the key is pressed.
+For make scan codes, bit 7 is clear (0).
+A ``break'' scan code is sent when a key is released.
+For break scan codes, bit 7 is set (1).
+
+Example---the user presses and releases the space bar: Two scan codes will be sent.
+First, the make code 0x39 will be sent.
+Second, the break scan code of 0xB9 will be sent when the key is released.
+
+\begin{table}[ht]
+    \begin{center}
+        \begin{tabular}{|l||l|l|l|l|l|l|l|} \hline
+                 & 0x00     & 0x10      & 0x20      & 0x30     & 0x40   & 0x50   & 0x60    \\ \hline\hline
+            0x00 &          &    Q      &    D      &    B     &   F6   &  KP2   & PRSN    \\ \hline
+            0x01 & ESC      &    W      &    F      &    N     &   F7   &  KP3   & PAUSE   \\ \hline
+            0x02 & 1	    &    E      & G         & M        & F8     &  KP0   & INS     \\ \hline
+            0x03 & 2	    &    R      & H         & \verb+<+ & F9     &  KP.   & HOME    \\ \hline
+            0x04 & 3	    &    T      & J         & \verb+>+ & F10    &        & PGUP    \\ \hline
+            0x05 & 4	    &    Y      & K         & \verb+/+ & NUMLCK &        & DEL     \\ \hline
+            0x06 & 5	    &    U      & L         & R SHFT   & SCRLCK &        & END     \\ \hline
+            0x07 & 6	    &    I      & \verb+;+  & KP*      & KP7    & F11    & PGDN    \\ \hline
+            0x08 & 7	    &    O      & \verb+"+  & L ALT    & KP8    & F12    & UP      \\ \hline
+            0x09 & 8        &    P      & \verb+~+  & SPACE    & KP9    &        & LEFT    \\ \hline
+            0x0A & 9        & \verb+[+  & L SHFT    & CAPS     & KP-    &        & DOWN    \\ \hline
+            0x0B & 0        & \verb+]+  & \verb+\+  & F1       & KP4    & L FNX  & RIGHT   \\ \hline
+            0x0C & \verb+-+ & ENTER     & Z         & F2       & KP5    & R ALT  & KP/     \\ \hline
+            0x0D & \verb+=+ & L CTRL    & X         & F3       & KP6    & R FNX  & KPENTER \\ \hline
+            0x0E & BKSP     & A         & C         & F4       & KP+    & R CTRL &         \\ \hline
+            0x0F & TAB      & S         & V         & F5       & KP1    &        &         \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{Keyboard Scan codes}
+    \label{tbl:kbd_scancodes}
+\end{table}
+
+\section{Useful Data Structures}
+
+\subsection*{Time}
+\begin{lstlisting}
+// Structure used for real time clock functions
+struct s_time {
+    short year;       // Year (0 - 9999)
+    short month;      // Month (1 = January through 12 = December)
+    short day;        // Day of month (1 - 31)
+    short hour;       // Hour (0 - 12 / 23)
+    short minute;     // Minute (0 - 59)
+    short second;     // Seconds (0 - 59)
+    short is_pm;	    // For 12-hour clock, 1 = PM
+    short is_24hours; // 1 = clock is 24-hours, 0 = clock is 12-hours
+}
+\end{lstlisting}
+
+\subsection*{Directory Entries}
+\begin{lstlisting}
+// Structure used for directory entry information
+struct s_file_info {
+    long size;                // Size of the file in bytes
+    unsigned short date;      // Creation date
+    unsigned short time;      // Creation time
+    unsigned char attributes; // Attribute bits
+    char name[MAX_PATH_LEN];  // Name of the file (256 bytes)
+}
+\end{lstlisting}
+
+File attribute bits:
+
+\bigskip
+
+\begin{tabular}{|l|l|} \hline
+0x01 & Read only \\ \hline
+0x02 & Hidden file \\ \hline
+0x04 & System file \\ \hline
+0x10 & Directory \\ \hline
+0x20 & Archive \\ \hline
+\end{tabular}
+
+\subsection*{System Information}
+\begin{lstlisting}
+/*
+ * Structure to describe the hardware
+ */
+struct s_sys_info {
+    uint16_t mcp_version;     		/* Current version of the MCP kernel */
+    uint16_t mcp_rev;         		/* Current revision, or sub-version of the MCP kernel */
+    uint16_t mcp_build;       		/* Current vuild # of the MCP kernel */
+    uint16_t model;           		/* Code to say what model of machine this is */
+    uint16_t sub_model;         	/* 0x00 = PB, 0x01 = LB, 0x02 = CUBE */
+    const char * model_name;        /* Human readable name of the model of the computer */
+    uint16_t cpu;             		/* Code to say which CPU is running */
+    const char * cpu_name;          /* Human readable name for the CPU */
+    uint32_t cpu_clock_khz;     	/* Speed of the CPU clock in KHz */
+    unsigned long fpga_date;        /* YYYYMMDD */    
+    uint16_t fpga_model;       		/* FPGA model number */
+    uint16_t fpga_version;    		/* FPGA version */
+    uint16_t fpga_subver;     		/* FPGA sub-version */
+    uint32_t system_ram_size;		/* The number of bytes of system RAM on the board */
+    bool has_floppy;                /* TRUE if the board has a floppy drive installed */
+    bool has_hard_drive;            /* TRUE if the board has a PATA device installed */
+    bool has_expansion_card;        /* TRUE if an expansion card is installed on the device */
+    bool has_ethernet;              /* TRUE if an ethernet port is present */
+    uint16_t screens;         		/* How many screens are on this computer */
+};
+\end{lstlisting}
+
+\subsection*{Model and CPU IDs}
+The numbers listed in table~\ref{tbl:fnx_model_ids} are used to distinguish between the different models of Foenix computers.
+The numbers listed in table~\ref{tbl:fnx_cpu_ids} are used to distinguish between the different CPUs.
+Both the machine and CPU IDs are also used by the Toolbox's make file.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Model & Number \\ \hline\hline
+			C256 FMX & 0 \\ \hline
+			C256 U & 1 \\ \hline
+			F256 JR & 2 \\ \hline
+			F256 JR E & 3 \\ \hline
+			C256 GenX & 4 \\ \hline
+			C256 U+ & 5 \\ \hline
+			A2560 U+ & 6 \\ \hline
+			A2560 X & 8 \\ \hline
+			A2560 U & 9 \\ \hline
+			A2560 M & 10 \\ \hline
+			A2560 K & 11 \\ \hline
+			A2560 K40 & 12 \\ \hline
+			A2560 K60 & 13 \\ \hline
+			F256 K2 & 17 \\ \hline
+			F256 K & 18 \\ \hline
+			F256 Ke & 19 \\ \hline
+			F256 K2e & 20 \\ \hline
+			FA2560 K2 & 24 \\ \hline
+			F256 JR2 & 35 \\ \hline
+			F256 K2x & 145 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Foenix Model IDs}
+	\label{tbl:fnx_model_ids}
+\end{table}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			CPU & Number \\ \hline\hline
+			M68SEC000 & 0 \\ \hline
+			M68020 & 1 \\ \hline
+			M68EC020 & 2 \\ \hline
+			M68030 & 3 \\ \hline
+			M68EC030 & 4 \\ \hline
+			M68040 & 5 \\ \hline
+			M68040V & 6 \\ \hline
+			ME68EC040 & 7 \\ \hline
+			i486DX 50 & 8 \\ \hline
+			i468DX 60 & 9 \\ \hline
+			i468DX4 & 10 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Foenix CPU IDs}
+	\label{tbl:fnx_cpu_ids}
+\end{table}
+
+\subsection*{Screen Information}
+There are several structures defined to provide information about the text screen and to be used in controlling various aspects
+of the text screen.
+
+\begin{lstlisting}
+/*
+ * Structure to specify the size of a rectangle
+ */
+typedef struct s_extent {
+    short width;        /**< The width of the region */
+    short height;       /**< The height of the region */
+} t_extent, *p_extent;
+
+/*
+ * Structure to specify the location of a point on the screen
+ */
+typedef struct s_point {
+    short x;                /**< The column of the point */
+    short y;                /**< The row of the point */
+} t_point, *p_point;
+
+/*
+ * Structure to specify a rectangular area on the screen
+ */
+typedef struct s_rect {
+    t_point origin;         /**< The upper-left corner of the rectangle */
+    t_extent size;          /**< The size of the rectangle */
+} t_rect, *p_rect;
+\end{lstlisting}
+
+The capabilities of the screen are listed in the text capabilities structure.
+These capabilities include the supported display modes on the screen (as a bit field, the values of which are listed in table~\ref{tbl:fnx_screen_modes}),
+the number and sizes of the fonts supported, and the display resolutions supported.
+
+\begin{lstlisting}
+/*
+* Structure to specify the capabilities of a screen's text driver
+*/
+typedef struct s_txt_capabilities {
+    short number;               /**< The unique ID of the screen */
+    short supported_modes;      /**< The display modes supported on this screen */
+    short font_size_count;      /**< The number of supported font sizes */
+    p_extent font_sizes;        /**< Pointer to a list of t_extent listing all supported font sizes (in pixels) */
+    short resolution_count;     /**< The number of supported display resolutions */
+    p_extent resolutions;       /**< Pointer to a list of t_extent listing all supported display resolutions (in pixels) */
+} t_txt_capabilities, *p_txt_capabilities;
+\end{lstlisting}
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Mode & Number \\ \hline\hline
+			\verb+TXT_MODE_TEXT+ & 0x0001 \\ \hline
+			\verb+TXT_MODE_BITMAP+ & 0x0002 \\ \hline
+			\verb+TXT_MODE_SPRITE+ & 0x0004 \\ \hline
+			\verb+TXT_MODE_TILE+ & 0x0008 \\ \hline
+			\verb+TXT_MODE_SLEEP+ & 0x0010 \\ \hline
+			\verb+TXT_MODE_MEMORY+ & 0x0020 \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Toolbox Screen Mode Flags}
+	\label{tbl:fnx_screen_modes}
+\end{table}
+
+\section{Foenix Executable File Formats}
+
+\subsection*{PGX File Format}
+The PGX file format is the simplest executable format. It is similar in scale to MS-DOS's COM format, or the Commodore PRG format.
+It consists of a single segment of data to be loaded to a specific address, where that address is also the starting address.
+PGX starts with a header to identify the file and the starting address:
+
+\begin{itemize}
+	\item The first three bytes are the ASCII codes for ``PGX''. 
+    \item The fourth byte is the CPU and version identification byte.
+	Bits 0 through 3 represent the CPU code, and bits 4 through 7 represent the version of PGX supported.
+	At the moment, there is just version 0. The CPU code can be 1 for the WDC65816, or 2 for the M680x0.
+    \item The next four bytes (that is, bytes 4 through 7) are the address of the destination, in big-endian format (most significant byte first).
+	This address is both the address of the location in which to load the first byte of the data and is also the starting address for the file.
+\end{itemize}
+
+All bytes after the header are the contents of the file to be loaded into memory.
+
+\subsection*{PGZ File Format}
+The PGZ is a more complex format that supports multiple loadable segments, but is still to be loaded in set locations in memory.
+The first byte of the file is a file signature and also a version tag.
+
+If the first byte is an upper case Z, the file is a 24-bit PGZ file (i.e. all addresses and sizes specified in the file are 24-bits).
+If the file is a lower case Z, the file is a 32-bit PGZ file (all address and sizes are 32-bits in length).
+Note that all addresses and sizes are in little-endian format (that is, least-significant byte first).
+
+After the initial byte, the remainder of the PGZ file consists of segments, one after the other. Each segment consists of two or three fields,
+shown in table~\ref{tbl:pgz_file_segments}.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|l|} \hline
+			Field &	Size & Description \\ \hline\hline
+			\verb+address+ & 3 (“Z”) or 4 (“z”) bytes & The target address for this segment \\ \hline
+			\verb+size+ & 3 (“Z”) or 4 (“z”) bytes & The number of bytes in the data field \\ \hline
+			\verb+data+ & \verb+size+ bytes & The data to be loaded [optional] \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{PGZ File Segments}
+	\label{tbl:pgz_file_segments}
+\end{table}
+
+For a particular segment, if the size field is 0, there will be no bytes in the data field,
+and the segment specifies the starting address of the entire program.
+At least one such segment must be present in the PGZ file for it to be executable.
+If more than one is present, the last one will be the one used to specify the starting address.
+
+\section{Memory Map}
+
+\begin{tcolorbox}
+	{\bf NOTE:} This section describes the memory map of the F256 (65816) versions of the Toolbox and does not apply to the FA2560K2.
+\end{tcolorbox}
+
+The Foenix Toolbox uses different sections of both flash and RAM memory to provide its functions.
+The memory map in table~\ref{tbl:memory_map} marks the major areas and pseudo-registers for the Toolbox.
+The table also marks out sections of memory that are reserved for future use by the Toolbox (that is,
+sections not currently used but which may be used in the future), and areas specifically reserved for user
+programs (called out in boldface).
+
+Roughly speaking, all bank 0 RAM below 0x00:D000 and all RAM from bank 1 through bank 6 are free for user programs
+to do with as they wish. The stack is allocated and shared between the user programs and the toolbox functions.
+If a program wishes to move the stack for some reason, this should be safe enough to do, although some Toolbox functions
+might fail, if they use too much of the stack the user program reserved.
+
+Of course, if a program takes complete control over the F256 and does not require any toolbox functions, the program is free
+to do whatever it requires with memory. This memory map is only of importance for programs that need the Toolbox functions to
+work correctly.
+
+\begin{table}
+	\begin{center}
+		\begin{tabular}{|l|l|} \hline
+			Address & Purpose \\ \hline\hline
+			{\tt 0x00:0000 - 0x00:CFFF} & {\bf User Memory} \\ \hline
+			{\tt 0x00:D000 - 0x00:DFFF} & Toolbox Low Memory \\ \hline
+			{\tt 0x00:E000 - 0x00:EDEA} & Reserved \\ \hline
+			{\tt 0x00:EDEB - 0x00:FDEB} & Stack \\ \hline
+			{\tt 0x00:FDEC - 0x00:FDEF} & User IRQ Vector \\ \hline
+			{\tt 0x00:FDF4 - 0x00:FDF7} & User NMI Vector \\ \hline
+			{\tt 0x00:FDF8 - 0x00:FDFF} & Reserved \\ \hline
+			{\tt 0x00:FE00 - 0x00:FEFF} & Toolbox Direct Page \\ \hline
+			{\tt 0x00:FF00 - 0x00:FFFF} & Toolbox Bootstrap Shadow \\ \hline
+			{\tt 0x01:0000 - 0x06:FFFF} & {\bf User Memory} (F256jr, F256Ke) \\ \hline	
+			{\tt 0x01:0000 - 0x0E:FFFF} & {\bf User Memory} (F256K2e) \\ \hline	
+			{\tt 0x07:0000 - 0x07:FFFF} & Toolbox Memory (F256jr, F256Ke) \\ \hline
+			{\tt 0x0F:0000 - 0x0F:FFFF} & Toolbox Memory (F256K2e) \\ \hline
+			{\tt 0xFC:0000 - 0xFF:DFFF} & Toolbox Firmware \\ \hline
+			{\tt 0xFF:E000 - 0xFF:FEFF} & Toolbox Jump Table \\ \hline
+			{\tt 0xFF:FF00 - 0xFF:FFFF} & Toolbox Bootstrap and Vectors \\ \hline
+		\end{tabular}
+	\end{center}
+	\caption{Toolbox Memory Usage}
+	\label{tbl:memory_map}
+\end{table}

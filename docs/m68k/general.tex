@@ -1,0 +1,344 @@
+\section{General Functions}
+
+\subsection*{sys\_proc\_exit -- 0x000400}
+This function ends the currently running program and returns control to the kernel. It takes a single short argument,
+which is the result code that should be passed back to the kernel. This function does not return.
+
+\bigskip
+
+\begin{tabular}{|l|l|} \hline
+\multicolumn{2}{|l|}{\lstinline!void sys_proc_exit(short result)!} \\ \hline\hline
+result    & the code to return to the kernel \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+sys_proc_exit(0);     // Quit the program with a result code of 0
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    clr.w d0              ; Return code of 0
+    jsr sys_proc_exit     ; Quit the program
+\end{verbatim}
+
+\subsection*{sys\_proc\_run -- 0x0004D4}
+Load and run an executable binary file.
+This function will not return on success, since Foenix Toolbox is single tasking.
+Any return value will be an error condition.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_proc_run(const char * path, int argc, char * argv[])! \\ \hline
+path & the path to the executable file \\ \hline
+argc & the number of arguments passed \\ \hline
+argv & the array of string arguments \\ \hline
+Returns & the return result of the program \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Attempt to load and run /sd0/hello.pgx
+    // Pass the command name and "test" as the arguments
+
+    int argc = 2;
+    char * argv[] = {
+       "hello.pgx",
+       "test"
+    };
+    short result = sys_proc_run("/sd0/hello.pgx", argc, argv);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+        move.l #argv,-(a7)  ; Push pointer to the arguments
+        move.w argc,-(a7)   ; Push the argument count
+        move.l #path,d0     ; Point to the path to load
+    
+        jsr sys_proc_run    ; Try to load and run the file
+
+        addq.l #6,a7        ; Clean up the stack
+
+        ; If we get here, there was an error loading or running
+        ; the file. Error number is in the accumulator
+    
+path    dc.b '/sd0/hello.pgx',0
+
+argc    dc.w 2
+
+argv    dc.b 'hello.pgx',0
+        dc.b 'test',0
+\end{verbatim}
+
+\subsection*{sys\_proc\_set\_shell -- 0x000528}
+Set the address of a handler to be called in the event that a program calls \lstinline|sys_proc_exit|.
+If the address is 0 (the default), the Toolbox will restart the machine when \lstinline|sys_proc_exit| is called.
+If a non-zero address is provided, then the code at that address will be called in the same manner that program code
+is started.
+This function is provided to allow for the creation of shell programs and is not expected to be called by normal programs.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_proc_set_shell(uint32_t address)! \\ \hline
+Purpose & Set the address of the code that should handle a process exiting \\ \hline
+address & the address of the handler code for proc\_exit \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    uint32_t shell_entry = ...;
+    sys_proc_set_shell(shell_entry);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move #shell_entry,d0
+
+    jsr sys_proc_set_shell
+\end{verbatim}
+
+
+\subsection*{sys\_proc\_get\_result -- 0x00052C -- v1.01}
+If a program called \lstinline|sys_proc_exit|, this function returns the result code passed in that call.
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!int sys_proc_get_result()! \\ \hline
+Purpose & Set the address of the code that should handle a process exiting \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Get the result of the last program
+    int result = sys_proc_get_result();	
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Get the result of the last program
+    jsr sys_proc_get_result
+    ; Result code in the 16-bit accumulator
+\end{verbatim}
+
+
+\subsection*{sys\_reboot -- 0x000524 -- v1.01}
+Force the system to reboot.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_reboot()! \\ \hline
+Purpose & Force the system to reboot \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Reboot the machine
+    sys_reboot();	
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Reboot the machine
+    jsr sys_reboot
+\end{verbatim}
+
+\subsection*{sys\_get\_info -- 0x000424}
+Fill out a structure with information about the computer. This information includes the model, the CPU, the amount of memory,
+versions of the board and FPGAs, and what optional equipment is installed.
+
+There is no return value.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_get_info(p_sys_info info)! \\ \hline
+info & pointer to a s\_sys\_info structure to fill out \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    struct s_sys_info info;
+    sys_get_info(&info);
+    printf("Machine: %s\n", info.model_name);	
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #info,d0		; Point to the info structure
+
+    jsr sys_get_info
+
+    ; The structure at info now has data in it
+\end{verbatim}
+
+
+\subsection*{sys\_mem\_get\_ramtop -- 0x0004B4}
+Return the limit of accessible system RAM. The address returned is the first byte of memory that user programs may not access.
+User programs may use any byte from the bottom of system RAM to RAMTOP - 1.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!uint32_t sys_mem_get_ramtop()! \\ \hline
+Returns & the address of the first byte of reserved system RAM \\ \hline
+\end{tabular}
+
+
+\subsection*{sys\_mem\_reserve -- 0x0004B8}
+Reserve a block of memory from the top of system RAM.
+This call will reduce the value returned by \lstinline|sys_get_ramtop| and will create a block of memory that user programs and the kernel will not change.
+The current user program can load into that memory any code or data it needs to protect after it has quit
+(for instance, a terminate-stay-resident code block). \lstinline|sys_mem_reserve| returns the address of the first byte of the block reserved.
+
+NOTE: a reserved block cannot be returned to general use accept by restarting the system.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!uint32_t sys_mem_reserve(uint32_t bytes)! \\ \hline
+bytes & the number of bytes to reserve \\ \hline
+Returns & address of the first byte of the reserved block \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Reserve a block of 256 bytes...
+    uint32_t my_block = sys_mem_reserve(256);    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #256,d0          ; The amount requested (256 bytes)
+    jsr sys_mem_reserve     ; Attempt to reserve the block
+    move.l d0,my_block      ; Save the address of the block reserved
+\end{verbatim}
+
+\subsection*{sys\_time\_jiffies -- 0x0004BC}
+Returns the number of ``jiffies'' since system startup.
+
+A jiffy is 1/60 second. This clock counts the number of jiffies since the last system startup, but it is not terribly precise.
+This counter should be sufficient for providing timeouts and wait delays on a fairly course level, but it should not be used when precision is required.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!uint32_t sys_time_jiffies()! \\ \hline
+Returns & the number of jiffies since the last reset \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    long jiffies = sys_time_jiffies();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    jsr sys_time_jiffies    ; Get the time
+
+    ; Jiffy count is now in D0
+\end{verbatim}
+
+\subsection*{sys\_rtc\_set\_time -- 0x0004C0}
+Sets the date and time in the real time clock. The date and time information is provided in an \verb+s_time+ structure (see below).
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_rtc_set_time(p_time time)! \\ \hline
+time & pointer to a t\_time record containing the correct time \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    struct s_time time;
+    
+    // time structure is filled in with the current time
+
+    // Set the time in the RTC
+    sys_rtc_set_time(&time);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; time structure is filled in with the current time
+
+    ...
+
+    move.l #time,d0         ; Point to the time structure
+    jsr sys_rtc_set_time    ; Set the time in the RTC
+\end{verbatim}
+
+
+\subsection*{sys\_rtc\_get\_time -- 0x0004C4}
+Gets the date and time in the real time clock. The date and time information is provided in an \verb+s_time+ structure (see below).
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_rtc_get_time(p_time time)! \\ \hline
+time & pointer to a t\_time record in which to put the current time \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    struct s_time time;
+    // ...
+    sys_rtc_get_time(&time);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #time,d0         ; Point to the time structure
+	
+    jsr sys_rtc_get_time    ; Get the time from the RTC
+\end{verbatim}
+
+\subsection*{sys\_kbd\_scancode -- 0x0004C8}
+Returns the next keyboard scan code (0 if none are available).
+Note that reading a scan code directly removes it from being used by the regular console code and may cause some surprising behavior if you combine the two.
+
+See below for details about Foenix scan codes.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!uint16_t sys_kbd_scancode()! \\ \hline
+Returns & the next scan code from the keyboard... 0 if nothing pending \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Wait for a keypress
+    uint16_t scan_code = 0;
+    do {
+        // Get the Foenix scan code from the keyboard
+        scan_code = sys_kbd_scancode();
+    } while (scan_code == 0);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+wait:
+    jsr sys_kbd_scancode    ; Get the scan code from the keyboard
+    cmp.w #0,d0             ; Keep checking until we get a keypress
+    beq wait
+\end{verbatim}
+
+
+\subsection*{sys\_kbd\_layout -- 0x0004D0}
+Sets the keyboard translation tables converting from scan codes to 8-bit character codes.
+The table provided is copied by the kernel into its own area of memory, so the memory used in the calling program's memory space may be reused after this call.
+
+Takes a pointer to the new translation tables (see below for details). If this pointer is 0, Foenix Toolbox will reset its translation tables to their defaults.
+
+Returns 0 on success, or a negative number on failure.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_kbd_layout(const char * tables)! \\ \hline
+tables & pointer to the keyboard translation tables \\ \hline
+Returns & 0 on success, negative number on error \\ \hline
+\end{tabular}

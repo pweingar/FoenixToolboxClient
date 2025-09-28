@@ -1,0 +1,635 @@
+\section{Text System Functions}
+Many programs will likely use the console channel device and the \verb+sys_chan_write+ call to print most things to the screen,
+but there are certain operations that a program might need to carry out that do not fit well with the channel device. Also,
+programs may want lower level control over the text screen. These functions are part of the text block of functions.
+
+Functions in this block allow a program to find out what kinds of text modes the screen is capable of, change the
+size of the display text, manipulate the cursor and the border of the screen, and even change the font and display colors.
+Additionally, the text functions also provide for ``regions'' which may be used to create simple text windows---smaller rectangles
+on the screen where printing will go, leaving other portions of the text screen unchanged.
+
+The F256 supports only the one screen, but the text system functions were written with support for multiple screens in mind.
+All text functions take a screen number. For the F256 as of the time of this writing, that number will always be 0.
+If at some point, an F256 with multiscreen support is created or a graphics expansion card is produced, that additional
+screen could be supported by the Toolbox with the addition of a text mode driver.
+
+\subsection*{sys\_txt\_get\_capabilities  -- 0xFFE0E4}
+Gets the description of a screen's capabilities.
+The capabilities are returned as a pointer to a structure that provides a bit field of the various modes supported,
+a listing of different font sizes that are supported (the F256 currently supports only 8 by 8 fonts),
+and a listing of different screen resolutions supported by the screen.
+
+\begin{lstlisting}
+    struct s_txt_capabilities {
+        short number;               /* The unique ID of the screen */
+        short supported_modes;      /* The display modes supported on this screen */
+        short font_size_count;      /* The number of supported font sizes */
+        p_extent font_sizes;        /* Pointer to a list of t_extent listing all supported font sizes */
+        short resolution_count;     /* The number of supported display resolutions */
+        p_extent resolutions;       /* Pointer to a list of t_extent for supported resolutions (in pixels) */
+    }
+\end{lstlisting}
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!const p_txt_capabilities sys_txt_get_capabilities(short screen)! \\ \hline
+screen & the number of the text device \\ \hline
+Returns & a pointer to the read-only description (0 on error) \\ \hline
+\end{tabular}
+
+\subsection*{sys\_txt\_set\_mode -- 0x0004DC}
+Set the display mode of the screen. There are five basic modes supported which are indicated by the five flags:
+\begin{itemize}
+    \item \verb+TXT_MODE_TEXT+---Render base text
+    \item \verb+TXT_MODE_BITMAP+---Render bitmap graphics
+    \item \verb+TXT_MODE_TILE+---Render tilesets
+    \item \verb+TXT_MODE_SPRITE+---Render sprites
+    \item \verb+TXT_MODE_SLEEP+---Puts the monitor in power-saving mode by turning off the sync signals
+\end{itemize}
+
+These flags are returned in the \verb+supported_modes+ field of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+,
+and they may be combined to mix the different rendering engines if supported by the hardware
+(for instance, \verb+TXT_MODE_TEXT | TXT_MODE_SPRITE+ would combine text and sprites). \verb+TXT_MODE_SLEEP+ will over-ride all the other modes.
+
+The result of turning off all the mode flags is system dependent, but should result in a blank screen without putting the monitor into sleep mode.
+
+Returns 0 on success, any other number means the mode was invalid for the screen or the screen was invalid.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_set_mode(short screen, short mode)! \\ \hline
+screen & the number of the text device \\ \hline
+mode & a bit field of desired display mode options \\ \hline
+Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set screen 0 to text and tiles
+    short result = sys_txt_set_mode(0, TXT_MODE_TEXT | TXT_MODE_TILE);
+    if (result) {
+      // Handle the error
+    }    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #(TXT_MODE_TEXT | TXT_MODE_TILE),-(a7)   ; Turn on text and tile modes
+    move.w #0,d0                                	; On screen 0
+    
+    jsr sys_txt_set_mode
+
+    addq.l #2,a7                                   	; Clean up the stack
+\end{verbatim}
+
+\subsection*{sys\_txt\_set\_resolution -- 0x0004E0}
+Set the display resolution of the screen.
+The width and height must match one of the resolutions listed in the screen's capabilities.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_set_resolution(short screen, short width, short height)! \\ \hline
+screen & the number of the text device \\ \hline
+width & the desired horizontal resolution in pixels \\ \hline
+height & the desired vertical resolution in pixels \\ \hline
+Returns & 0 on success, any other number means the mode is invalid for the screen \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set screen 0 resolution to (320, 240)
+    short result = sys_txt_set_resolution(0, 320, 240);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #240,-(a7)        ; Resolution: 320 by 240
+    move.w #320,-(a7)
+    move.w #0,d0             ; On screen 0
+    
+    jsr sys_txt_set_mode
+
+    addq.l #4,a7             ; Clean up the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_xy -- 0x0004E8}
+Sets the position of the cursor on the screen.
+
+The call takes the number of the screen and the character row (y) and column (x) of the cursor.
+The cursor positions are specified relative to the origin of the current region set on the screen, so (0, 0)
+will be the origin of the region, (0, 1) will be the character position right below the origin, and so on.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_xy(short screen, short x, short y)! \\ \hline
+screen & the number of the text device \\ \hline
+x & the column for the cursor \\ \hline
+y & the row for the cursor \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Move the cursor to the home position in the current region
+    sys_txt_set_xy(0, 0, 0);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #0,-(a7)         ; Set y = 0
+    move.w #0,-(a7)         ; Set x = 0
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_set_xy      ; Set the position
+
+    addq.l #4,a7            ; Clean up the stack
+    ply
+\end{verbatim}
+
+\subsection*{sys\_txt\_get\_xy -- 0x0004EC}
+Gets the position of the text cursor, given two parameters: the screen number, and the pointer to a \verb+t_point+.
+The cursor position will be copied into the \verb+t_point+ object.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_get_xy(short screen, p_point position)! \\ \hline
+screen & the number of the text device \\ \hline
+position & pointer to a t\_point record to fill out \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Get the cursor position
+    t_point position;
+    sys_txt_get_xy(0, &position);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #position,-(a7)  ; Pointer to the position object
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_get_xy      ; Get the cursor position
+
+    addq.l #4,d0            ; Clean up the stack
+
+position:
+    ; ...
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_get\_region -- 0x0004F0}
+Gets the origin and size of the rectangle describing the current region.
+
+The call takes a screen number and a pointer to a \verb+t_rect+ structure to fill out with the current information.
+Returns 0 on success, any other number is an error.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_get_region(short screen, p_rect region)! \\ \hline
+screen & the number of the text device \\ \hline
+region & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
+Returns & 0 on success, any other number means the region was invalid \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Get the current region
+    t_rect region;
+    sys_txt_get_region(0, &region);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #region,-(a7)    ; Pointer to the region object
+    move.l #0,d0            ; Screen 0
+
+    jsr sys_txt_get_region  ; Get the current region
+
+    addq.l #4,a7            ; Clean up the stack
+
+region:
+    ; ...
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_region -- 0x0004F4}
+Sets the rectangular region of the screen that will be used for all subsequent printing, scrolling, and filling.
+This call takes the screen number and a pointer to a \verb+t_rect+ structure containing the origin (upper-left corner) and the size (width and height)
+of the region. These values are specified in character cells, with (0, 0) being the upper-left corner of the screen.
+If the size of the rectangle is 0 (width = height = 0), then the region will be the full screen.
+
+Returns 0 on success, any other number is an error.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_set_region(short screen, p_rect region)! \\ \hline
+screen & the number of the text device \\ \hline
+region & pointer to a t\_rect describing the rectangular region (using character cells for size and size) \\ \hline
+Returns & 0 on success, any other number means the region was invalid \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the region to a 5x5 panel in the upper left
+    t_rect region;
+    region.origin.x = 0;
+    region.origin.y = 0;
+    region.size.width = 5;
+    region.size.height = 5;
+    short result = sys_txt_set_region(0, &region);
+    if (result) {
+      // Handle the error
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #region,-(a7)    ; Pointer to the region object
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_set_region  ; Set the new region
+
+    addq.l #4,a7            ; Clean up the stack
+
+region:
+    dc.w 0, 0, 5, 5
+\end{verbatim}
+
+\subsection*{sys\_txt\_set\_color -- 0x0004F8}
+Set the foreground and background color to use for subsequent prints to the screen.
+Takes the screen number and the color indexes for foreground and background colors (0 -- 15).
+Returns 0 on success, any other number is an error.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_color(short screen, unsigned char foreground, unsigned char background)! \\ \hline
+screen & the number of the text device \\ \hline
+foreground & the Text LUT index of the new current foreground color (0 -- 15) \\ \hline
+background & the Text LUT index of the new current background color (0 -- 15) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the text color to cyan on black (in standard colors)
+    sys_txt_set_color(0, 6, 0);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #0,-(a7)         ; Background to black
+    move.w #6,-(a7)         ; Foreground to cyan
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_set_color   ; Set the text color
+
+    addq.l #4,a7            ; Clean up the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_get\_color -- 0x0004FC}
+Gets the current foreground and background color settings.
+Takes the screen number and two pointers: one for the foreground color value, and one for the background color value.
+Returns 0 on success, any other number is an error.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_get_color(short screen, unsigned char * foreground, unsigned char * background)! \\ \hline
+screen & the number of the text device \\ \hline
+foreground & the Text LUT index of the new current foreground color (0 - 15) \\ \hline
+background & the Text LUT index of the new current background color (0 - 15) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Gets the text color for the screen
+    short foreground = 0;
+    short background = 0;
+    if (sys_txt_get_color(0, &foreground, &background)) {
+      // Handle error
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #background,-(a7)    ; Push address of background variable
+    move.l #foreground,-(a7)    ; Push address of foreground variable
+    move.w #0,d0                ; Screen 0
+
+    jsr sys_txt_get_color       ; Get the color
+
+    addq.l #8,a7                ; Clean up the stack
+
+    ; ...
+
+foreground:
+    ds.w 1
+background:
+    ds.w 1
+\end{verbatim}
+
+\subsection*{sys\_txt\_set\_cursor -- 0x000500}
+Set the appearance of the text mode cursor.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_cursor(short screen, short enable, short rate, char c)! \\ \hline
+screen & the screen number \\ \hline
+enable & 0 to hide, any other number to make visible \\ \hline
+rate & the blink rate for the cursor (0=1s, 1=0.5s, 2=0.25s, 3=1/5s) \\ \hline
+char & the character in the current font to use as a cursor \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the cursor on screen 0
+    // Visible, blink period 0.25s, character @
+    sys_txt_set_cursor(0, 1, 2, '@');
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #'@',-(a7)   ; Cursor character @
+    move.w #2,-(a7)     ; Blink period 0.25s
+    move.w #1,-(a7)     ; Show the cursor
+    move.w #0,d0        ; Screen 0
+
+    jsr sys_txt_set_cursor
+
+    addq.l #6,a7        ; Clean the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_cursor\_visible -- 0x000504}
+Sets the visibility of the text cursor.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_cursor_visible(short screen, short is_visible)! \\ \hline
+screen & the screen number \\ \hline
+is\_visible & TRUE if the cursor should be visible, FALSE (0) otherwise \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Hide the cursor on screen 0
+    sys_txt_set_cursor_visible(0, 0);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #0,-(a7) ; Hide the cursor
+    move.w #0,d0    ; Screen 0
+
+    jsr sys_txt_set_cursor_visible
+
+    addq.l #2,a7    ; Clean the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_font -- 0x000508}
+Set the font to be used in text mode on the screen. Takes the screen number, the width and height of the characters (in pixels),
+and a pointer to the actual font data. Returns 0 on success, any other number means the screen is invalid, or the font size is invalid.
+
+NOTE: the font size must be listed in the \verb+font_sizes field+ of the \verb+t_txt_capabilities+ structure returned by \verb+sys_txt_get_caps+.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_txt_set_font(short screen, short width, short height, unsigned char * data)! \\ \hline
+screen & the number of the text device \\ \hline
+width & width of a character in pixels \\ \hline
+height & of a character in pixels \\ \hline
+data & pointer to the raw font data to be loaded \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the font of screen 0 to an 8x8 font
+    unsigned char * font_data;
+    font_data = ...;
+    short result = sys_txt_set_font(0, 8, 8, font_data);
+    if (result) {
+      // Handle error
+    }    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #font_data,-(a7)     ; Push pointer to the font data
+    move.w #8,-(a7)             ; Push size of 8x8
+    move.w #0,d0                ; Screen 0
+
+    jsr sys_txt_set_font        ; Set the font
+
+    addq.l #6,a7                ; Clean up the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_setsizes -- 0x0004E4}
+Sets the text screen device driver to the current screen geometry, based on the display resolution and border size.
+If a program changes the border or display resolution on its own but still needs to use the Toolbox console or text routines to display text,
+it should call this function to have the Toolbox recalculate the screen geometry.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_setsizes(short screen)! \\ \hline
+screen & the number of the text device \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Recalculate geometry of screen 0
+    sys_txt_setsizes(0);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #0,d0
+    jsr sys_txt_setsizes
+\end{verbatim}
+
+\subsection*{sys\_txt\_get\_sizes -- 0x00050C}
+Gets the size of the screen in total pixels (not taking the border into consideration) and visible characters (taking the border into account).
+
+NOTE: \verb+text_size+ and \verb+pixel_size+ can be null (0), in which case that structure will not be filled out,
+so you do not have to provide a \verb+t_extent+ for a measurement you do not need.
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_get_sizes(short screen, p_extent text_size, p_extent pixel_size)! \\ \hline
+screen & the screen number  \\ \hline
+text\_size & the size of the screen in visible characters (may be null) \\ \hline
+pixel\_size & the size of the screen in pixels (may be null) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Hide the cursor on screen 0
+    t_rect text_matrix;
+    t_rect pixel_matrix;
+    sys_txt_get_sizes(0, &text_matrix, &pixel_matrix);    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #pixel_matrix,-(a7)  ; Push pointer to pixel extent
+    move.l #text_matrix,-(a7)   ; Push pointer to text extent
+    move.w #0,d0
+
+    jsr sys_txt_get_sizes       ; Get the sizes
+
+    addq.l #8,a7                ; Clean up the stack
+
+    ; ...
+
+pixel_matrix:                   ; Holds size of screen in pixels
+    ds.w 2
+text_matrix:                    ; Holds size of screen in characters
+    ds.w 2
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_border -- 0x000510}
+Sets the size of the border around the screen. Takes the number of the screen and the size of the border width and height.
+In this context, width is the width of the left and right borders taken separately, and height is the height of the top and bottom borders.
+So if width is 8 and height is 16, 32 lines will be taken up by the top and bottom borders together,
+and 16 columns will be taken up by the left and right borders.
+
+NOTE: if the width and height of the borders are 0, the border will be disabled.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_border(short screen, short width, short height)! \\ \hline
+screen & the number of the text device \\ \hline
+width & the horizontal size of one side of the border (0 -- 32 pixels) \\ \hline
+height & the vertical size of one side of the border (0 -- 32 pixels) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the border on screen 0: width of 16, height of 8
+    sys_txt_set_border(0, 16, 8);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #8,-(a7)         ; 8 pixels vertically
+    move.w #16,-(a7)        ; 16 pixels horizontally
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_set_border  ; Set the border size
+
+    addq.l #4,a7            ; Clean up the stack
+\end{verbatim}
+
+
+\subsection*{sys\_txt\_set\_border\_color -- 0x000514}
+Set the color of the border, using red, green, and blue components (which may go from 0 to 255).
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_set_border_color(short screen, unsigned char red, unsigned char green, unsigned char blue)! \\ \hline
+screen & the number of the text device \\ \hline
+red & the red component of the color (0 - 255) \\ \hline
+green & the green component of the color (0 - 255) \\ \hline
+blue & the blue component of the color (0 - 255) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Set the border of screen 0 to dark blue
+    sys_txt_set_border_color(0, 0, 0, 128);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #128,-(a7)           ; Push blue
+    move.w #0,-(a7)             ; Push green
+    move.w #0,-(a7)             ; Push red
+    move.w #0,d0                ; Screen 0
+
+    jsr sys_txt_set_border      ; Set the border color
+
+    addq.l #6,a7                ; Clean up the stack
+\end{verbatim}
+
+\subsection*{sys\_txt\_put -- 0x000518}
+Print a character to the screen.
+
+NOTE: No this function does not interpret ANSI terminal codes and will display
+the characters corresponding to those bytes on the screen. To print with ANSI
+terminal code support, use the console channel device.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_put(short screen, char c)! \\ \hline
+screen & the number of the text device \\ \hline
+c & the character to print \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Print 'A' to the screen
+    sys_txt_put(0, 'A');
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #'A',-(a7)   ; Push the character
+    move.w #0,d0        ; Screen 0
+    
+    jsr sys_txt_put     ; Print the character
+
+    addq.l #2,a7        ; Clean up the stack
+\end{verbatim}
+
+\subsection*{sys\_txt\_print -- 0x00051C}
+Print a null-terminated ASCII string to the screen.
+
+NOTE: No this function does not interpret ANSI terminal codes and will display
+the characters corresponding to those bytes on the screen. To print with ANSI
+terminal code support, use the console channel device.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_txt_print(short screen, const char * message)! \\ \hline
+screen & the number of the text device \\ \hline
+message & the ASCII Z string to print \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Print a message to the screen
+    sys_txt_print(0, "Hello, Foenix!\n");
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #message,-(a7)   ; Push pointer to message
+    move.w #0,d0            ; Screen 0
+
+    jsr sys_txt_print       ; Print the message
+
+    addq.l #4,a7            ; Clean up the stack
+
+    ; ...
+
+message:
+    dc.b "Hello, Foenix!",13,10,0
+\end{verbatim}

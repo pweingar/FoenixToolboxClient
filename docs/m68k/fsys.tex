@@ -1,0 +1,650 @@
+\section{File System Functions}
+
+% \subsubsection*{Example: C}
+% \begin{lstlisting}
+%     lorum ipsum
+% \end{lstlisting}
+
+% \subsubsection*{Example: Assembler}
+% \begin{verbatim}
+%     lorum ipsum
+% \end{verbatim}
+
+\subsection*{sys\_fsys\_open -- 0x000478}
+Attempt to open a file in the file system for reading or writing.
+Returns a channel number associated with the file.
+If the returned number is negative, there was an error opening the file.
+
+The mode parameter indicates how the file should be open and is a bit field, where each bit has a separate meaning:
+\begin{itemize}
+    \item 0x01: Read
+    \item 0x02: Write
+    \item 0x04: Create if new
+    \item 0x08: Always create
+    \item 0x10: Open file if it exists, otherwise create
+    \item 0x20: Open file for appending
+\end{itemize}
+
+\bigskip		
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_open(const char * path, short mode)! \\ \hline
+path & the ASCIIZ string containing the path to the file. \\ \hline
+mode & the mode (e.g. r/w/create) \\ \hline
+Returns & the channel ID for the open file (negative if error) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short chan = sys_fsys_open("hello.txt", 0x01);
+    if (chan > 0) {
+      // File is open for reading
+    } else {
+      // File was not open... chan has the error number
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	move.w #1,-(a7)     ; Push the mode
+	move.l #path,d0     ; Point to the path
+
+    jsr sys_fsys_open   ; Try to open the file
+
+	addq.l #2,a7        ; Clean up the stack
+
+    btst.w #15,d0       ; Check to see if we opened the file
+    beq error
+
+    ; File is open for reading
+
+error:
+
+    ; There was an error
+    ; The error number is in the accumulator
+
+path:
+    dc.b 'hello.txt',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_close -- 0x00047C}
+Close a file that was previously opened, given its channel number.
+If there were writes done on the channel, those writes will be committed to the block device holding the file.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_close(short fd)! \\ \hline
+fd & the channel ID for the file \\ \hline
+Returns & 0 on success, negative number on failure \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short chan = sys_fsys_open(...);
+    // ...
+    sys_fsys_close(chan);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w chan,d0
+    jsr sys_fsys_close
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_opendir -- 0x000480}
+Open a directory on a volume for reading, given its path.
+Returns a directory handle number on success, or a negative number on failure.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_opendir(const char * path)! \\ \hline
+path & the path to the directory to open \\ \hline
+Returns & the handle to the directory if >= 0. An error if < 0 \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short dir = sys_fsys_opendir("/sd0/System");
+    if (dir > 0) {
+      // dir can be used for reading the directory entries
+    } else {
+      // There was an error... error number in dir
+    }    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	move.l #path,d0         ; Point to the path
+
+    jsr sys_fsys_opendir    ; Try to open the directory
+
+    btst.w #15,d0           ; Check to see if we opened the directory
+    beq error
+
+    ; Directory is open for reading
+
+error:
+
+    ; There was an error
+    ; The error number is in the accumulator
+
+path:
+    dc.b '/sd0/System',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_closedir -- 0x000484}
+Close a previously open directory, given its number.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_closedir(short dir)! \\ \hline
+dir & the directory handle to close \\ \hline
+Returns & 0 on success, negative number on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short dir = ... // Number of the directory to close
+    sys_fsys_closedir(dir);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w dir,d0           ; Get the number of the directory to close
+    jsr sys_fsys_closedir   ; Close the directory
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_readdir -- 0x000488}
+Given the number of an open directory, and a buffer in which to place the data, fetch the file information of the next directory entry.
+(See below for details on the \verb+file_info+ structure.)
+
+Returns 0 on success, a negative number on failure.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_readdir(short dir, p_file_info file)! \\ \hline
+dir & the handle of the open directory \\ \hline
+file & pointer to the t\_file\_info structure to fill out. \\ \hline
+Returns & 0 on success, negative number on failure \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short dir = sys_fsys_opendir("/sd0/System");
+    if (dir > 0) {
+      // dir can be used for reading the directory entries
+      struct s_file_info file;
+      if (sys_fsys_readdir(dir, &file_info) == 0) {
+        // file_info contains information...
+      } else {
+        // Could not read the file entry...
+      }
+    } else {
+      // There was an error... error number in dir
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+	move.l #path,d0         ; Point to the path
+
+    jsr sys_fsys_opendir    ; Try to open the directory
+
+    btst.w #15,d0           ; Check to see if we opened the directory
+    beq error
+
+    ; Directory is open for reading
+
+	move.w d0, dir          ; Save the directory number
+
+	move.l #file_info,-(a7) ; Set the pointer to the file info
+
+    ; Directory number is already in D0
+
+    jsr sys_fsys_readdir    ; Try to read from the directory
+
+    addq.l 4,a7             ; Clean up the stack
+
+    btst #15, d0            ; If result is <0, there is an error
+    beq error
+
+    ; Entry is loaded into structure at file_info
+
+error:
+
+    ; There was an error
+    ; The error number is in the accumulator
+
+path:
+    dc.b '/sd0/System',0
+file_info:
+    ; ...
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_findfirst -- 0x00048C}
+Given the path to a directory to search, a search pattern, and a pointer to a \verb+file_info+ structure,
+return the first entry in the directory that matches the pattern.
+
+Returns a directory handle on success, a negative number if there is an error
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_findfirst(const char * path, const char * pattern, p_file_info file)! \\ \hline
+path & the path to the directory to search \\ \hline
+pattern & the file name pattern to search for \\ \hline
+file & pointer to the t\_file\_info structure to fill out \\ \hline
+Returns & error if negative, otherwise the directory handle to use for subsequent calls \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    struct s_file_info file;
+    short dir = sys_fsys_findfirst("/hd0/System/", "*.pgx", &file_info);
+    if (dir == 0) {
+      // file_info contains information...
+    } else {
+      // Could not read the file entry...
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #file_info,-(a7) ; Point to the file_info 
+    move.l #pattern,-(a7)   ; Point to the search pattern
+    move.l #path,d0         ; Point to the directory to search
+
+    jsr sys_fsys_findfirst  ; Try to find the first match
+
+    addq.l #8,a7            ; Clean up the stack
+
+    btst.w #15,d0           ; Check to see if error (negative)
+    beq error
+
+    ; File info should contain the first match
+
+error:
+
+    ; There was an error
+
+file_info:
+    ; ...
+pattern:
+    dc.b '*.pgx',0
+path:
+    dc.b '/sd0/System',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_findnext -- 0x000490}
+Given the directory handle for a previously open search (from \verb+sys_fsys_findfirst+), and a \verb+file_info+ structure,
+fill out the structure with the file information of the next file to match the original search pattern.
+
+Returns 0 on success, a negative number if there is an error
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_findnext(short dir, p_file_info file)! \\ \hline
+dir & the handle to the directory (returned by fsys\_findfirst) to search \\ \hline
+file & pointer to the t\_file\_info structure to fill out \\ \hline
+Returns & 0 on success, error if negative \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    struct s_file_info file;
+    short dir = sys_fsys_findfirst("/hd0/System/", "*.pgx", &file_info);
+    if (dir == 0) {
+      // file_info contains information...
+
+      // Look for the next...
+      short result = sys_fsys_findnext(dir, &file_info);
+
+    } else {
+      // Could not read the file entry...
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #file_info,-(a7) ; Point to the file_info 
+    move.l #pattern,-(a7)   ; Point to the search pattern
+    move.l #path,d0         ; Point to the directory to search
+
+    jsr sys_fsys_findfirst  ; Try to find the first match
+
+    addq.l #8,a7            ; Clean up the stack
+
+    btst.w #15,d0           ; Check to see if error (negative)
+    beq error
+
+    move.w d0,dir           ; Save the open directory number
+
+    ; File info should contain the first match
+
+    ; ...
+
+    ; Find the next
+
+    move.l #file_info,-(a7) ; Point to the file_info
+    move.w dir,d0           ; Get the directory number
+
+    jsr sys_fsys_findnext   ; Try to find the next match
+
+    addq.l #4,a7            ; Clean up the stack
+
+    btst.w #15,d0           ; Check to see if error
+    beq error
+
+    ; File info should contain next match
+
+error:
+
+    ; There was an error
+
+file_info:
+    ; ...
+pattern:
+    dc.b '*.pgx',0
+path:
+    dc.b '/sd0/System',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_get\_label -- 0x000494}
+Get the label of a volume.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_get_label(const char * path, char * label)! \\ \hline
+path & path to the drive \\ \hline
+label & buffer that will hold the label... should be at least 35 bytes \\ \hline
+Returns & 0 on success, error if negative \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    char label[64];
+    short result = sys_fsys_get_label("/sd0", label);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #label,-(a7)     ; Point to the label buffer
+    move.l #path,d0         ; Point to the path of the drive
+
+    jsr sys_fsys_get_label  ; Attempt to get the label
+
+    addq.l #4,a7            ; Clean the stack
+
+    btst.w #15,d0           ; Check for an error
+    beq error
+
+    ; We should have the label filled
+
+error:
+
+    ; There was an error
+
+path:
+    dc.b '/sd0',0
+label:
+    ds.b 64
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_set\_label -- 0x000498}
+Set the label of a volume.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_set_label(short drive, const char * label)! \\ \hline
+drive & drive number \\ \hline
+label & buffer that holds the label \\ \hline
+Returns & 0 on success, error if negative \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short result = sys_fsys_set_label(0, "FNXSD0");
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #label,-(a7)     ; Point to the label
+    move.w #0,d0            ; Set the volume number
+
+    jsr sys_fsys_set_label  ; Attempt to set the label
+
+    addq.l #4,a7            ; Clean the stack
+
+    btst.w #15,d0           ; Check for an error
+    beq error
+
+    ; We should have the label updated
+
+error:
+
+    ; There was an error
+
+label:
+    dc.b 'FNXSD0',0
+\end{verbatim}
+
+\subsection*{sys\_fsys\_mkdir -- 0x00049C}
+Create a directory.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_mkdir(const char * path)! \\ \hline
+path & the path of the directory to create. \\ \hline
+Returns & 0 on success, negative number on failure. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short result = sys_fsys_mkdir("/sd0/Samples");
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #path,-(a7)
+
+    jsr sys_fsys_mkdir  ; Attempt to create the directory
+
+    btst.w #15,d0       ; Check for an error
+    beq error
+
+    ; Directory should be created
+
+error:
+
+    ; There was an error
+
+path:
+    dc.b '/sd0/Samples',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_delete -- 0x0004A0}
+Delete a file or directory, given its path. Returns 0 on success, a negative number if there is an error
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_delete(const char * path)! \\ \hline
+path & the path of the file or directory to delete. \\ \hline
+Returns & 0 on success, negative number on failure. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short result = sys_fsys_delete("/sd0/test.txt");
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #path,d0     ; Point to the path to delete
+
+    jsr sys_fsys_delete ; Try to delete the file
+
+    btst #15,d0
+    beq error
+
+    ; File was deleted...
+
+error:
+
+    ; There was an error
+
+path:
+    dc.b '/sd0/test.txt',0
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_rename -- 0x0004A4}
+Rename a file or directory. Returns 0 on success, a negative number if there is an error
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_rename(const char * old_path, const char * new_path)! \\ \hline
+old\_path & he current path to the file \\ \hline
+new\_path & the new path for the file \\ \hline
+Returns & 0 on success, negative number on failure. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short result = sys_fsys_rename("/sd0/test.txt", "doc.txt");
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #new_path,-(a7)	; Push the pointer to the new name
+    move.l #old_path,d0     ; Point to the original file name
+
+    jsr sys_fsys_rename 	; Try to rename the file the file
+
+    addq.l #4,a7            ; Clean up the stack
+
+    btst.w #15,d0           ; Check for an error
+    beq error
+
+    ; File was named...
+
+error:
+
+    ; There was an error
+
+old_path:
+    dc.b '/sd0/test.txt',0
+new_path:
+    dc.b 'doc.txt',0
+\end{verbatim}
+
+\subsection*{sys\_fsys\_load -- 0x0004A8}
+Load a file into memory. This function can either load a file into a specific address provided by the caller,
+or to the loading address specified in the file (for executable files). For executable files, the function will also
+return the starting address specified in the file.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_load(const char * path, uint32_t destination, uint32_t * start)! \\ \hline
+path & the path to the file to load \\ \hline
+destination & the destination address (0 for use file's address) \\ \hline
+start & pointer to the long variable to fill with the starting address \\ \hline
+Returns & 0 on success, negative number on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    uint32_t start;
+    short result = sys_fsys_load("hello.pgx", 0, &start);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.l #start,-(a7) ; Push the pointer to the start variable
+    move.l #0,-(a7)     ; Push 0 to leave a load address unspecified
+    move.l #path,d0     ; Point to the file name
+
+    jsr sys_fsys_load   ; Try to rename the file the file
+
+    addq.l #8,a7        ; Clean up the stack
+
+    btst.w #15,d0       ; Check for an error
+    beq error
+
+    ; File was loaded
+
+error:
+
+    ; There was an error
+
+path:
+    dc.b 'hello.pgx',0
+start:
+    ds.l 1
+\end{verbatim}
+
+
+\subsection*{sys\_fsys\_register\_loader -- 0x0004AC}
+Register a file loader for a binary file type.
+A file loader is a function that takes a channel number for a file to load, a long representing the destination address,
+and a pointer to a long for the start address of the program. These last two parameters are the same as are provided the \verb+sys_fsys_load+.
+
+On success, returns 0. If there is an error in registering the loader, returns a negative number.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_register_loader(const char * extension, p_file_loader loader)! \\ \hline
+extension & the file extension to map to \\ \hline
+loader & pointer to the file load routine to add \\ \hline
+Returns & 0 on success, negative number on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short foo_loader(short chan, uint32_t destination, uint32_t * start) {
+        // Load file to destination (if provided)
+        // If executable, set start to address to run
+        return 0; // If successful
+     };
+     // ...
+     short result = sys_fsys_register_loader("FOO", foo_loader);
+\end{lstlisting}
+
+\subsection*{sys\_fsys\_stat -- 0x0004B0}
+Check to see if a file is present. The \verb+s_file_info+ structure will be populated if the file is found.
+Returns 0 on success or a negative number on an error.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_fsys_stat(const char * path, p_file_info file)! \\ \hline
+path & the path to the file to check \\ \hline
+file & pointer to a file info record to fill in, if the file is found. \\ \hline
+Returns & 0 on success, negative number on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    s_file_info file_info;
+    short result = sys_fsys_stat("/sd0/fnxboot.pgx", &file_info);
+\end{lstlisting}

@@ -1,0 +1,325 @@
+\section{Interrupt Functions}
+Interrupts in the Toolbox are managed at a device level.
+The F256 includes an interrupt controller which assigns a different interrupt to each device that can raise an interrupt.
+The interrupt controller provides for separate masking and interrupt flags for each device interrupt.
+The Toolbox allows programs to register an interrupt handler for the specific device-level interrupt the program needs to handle.
+That handler is just a regular subroutine (it should not be coded to return with an \verb+RTI+ instruction).
+The Toolbox will take care of checking the various interrupt controller registers to determine which interrupts are currently pending
+and will call the associated interrupt handler automatically. The Toolbox will also take care to save register states to avoid interfering
+with the currently running program.
+
+On the F256, interrupts are arranged into three groups, with each interrupt getting a bit within one of the groups in each of the 
+control registers for that group. For instance, the start of frame interrupt (vertical blank interrupt) is the least significant bit of group 0.
+The Foenix Toolbox, on the other hand, assigns a single number to each interrupt and internally maps that number to the appropriate group and bit.
+When enabling or disabling an interrupt or when registering an interrupt handler, it is this internal interrupt number that is used.\footnote{The interrupt
+number assignments may seem arbitrary, but they are actually just inherited from Foenix MCP and the A2560s, where the interrupt number is essentially just
+the group and bit numbers packed into an 8-bit value.}
+
+In addition to controlling interrupts at a device level ({\it e.g.} the serial port interrupt), the Toolbox also has routines to allow a program to
+enable or disable IRQ processing at the CPU level. The \lstinline!int_enable_all!, \lstinline!int_disable_all!, and \lstinline!int_restore_all!,
+functions work at the CPU level and do not affect the mask bits in the F256's interrupt controller. The \lstinline!int_enable!, and \lstinline!int_disable!
+functions work at the level of the individual device interrupt in the interrupt controller. 
+ 
+\subsection*{Overriding Toolbox Interrupt Handling}
+The Toolbox takes care of the details of the F256's interrupt controller for user programs, but that comes at the cost of overhead.
+Many programs will need more efficient control over interrupts and will prefer to manage interrupts for themselves, without the 
+Toolbox intervening.
+
+This is perfectly fine.
+
+The 65816's interrupt vectors are stored in RAM (the F256 populates them based on data in flash at boot time).
+Programs can write their own interrupt handler addresses to those vectors to take over the handling of interrupts.
+The only problem with this is that the Toolbox depends upon interrupts to handle keystrokes.
+By default, the Toolbox uses the start-of-frame (SOF) interrupt on the F256k and F256k2 to periodically trigger a
+scan of the keyboard matrix and the PS/2 interrupt on the F256jr.
+If a program takes over interrupts but still needs to use the Toolbox's keyboard routines, it will need to call
+\lstinline!sys_kbd_handle_irq! function periodically (see below) to trigger the matrix scan or check the PS/2 port for keystrokes.
+
+\begin{table}
+    \begin{center}
+        \begin{tabular}{|c|c||c|l|} \hline 
+            \multicolumn{2}{|c||}{Hardware} & Toolbox & \\
+            Group & Bit & Number & Purpose \\ \hline
+            \multirow{8}{*}{0} & 0x01 & 0x00 & Start of frame \\ \cline{2-4}
+                & 0x02 & 0x01 & Start of line \\ \cline{2-4}
+                & 0x04 & 0x10 & PS/2 Keyboard \\ \cline{2-4}
+                & 0x08 & 0x12 & PS/2 Mouse \\ \cline{2-4}
+                & 0x10 & 0x18 & Timer 0 \\ \cline{2-4}
+                & 0x20 & 0x19 & Timer 1 \\ \cline{2-4}
+                & 0x40 & ---  & Reserved \\ \cline{2-4}
+                & 0x80 & 0x06 & External Expansion \\ \hline\hline
+
+            \multirow{8}{*}{1} & 0x01 & 0x13 & Serial Port \\ \cline{2-4}
+                & 0x02 & ---  & Reserved \\ \cline{2-4}
+                & 0x04 & ---  & Reserved \\ \cline{2-4}
+                & 0x08 & ---  & Reserved \\ \cline{2-4}
+                & 0x10 & 0x1F & Real Time Clock \\ \cline{2-4}
+                & 0x20 & 0x1D & VIA 0 \\ \cline{2-4}
+                & 0x40 & 0x1E & VIA 1 (F256K) \\ \cline{2-4}
+                & 0x80 & 0x22 & SD Card \\ \hline\hline
+
+            \multirow{8}{*}{2} & 0x01 & --- & Reserved \\ \cline{2-4}
+                & 0x02 & --- & Reserved \\ \cline{2-4}
+                & 0x04 & --- & Reserved \\ \cline{2-4}
+                & 0x08 & --- & Reserved \\ \cline{2-4}
+                & 0x10 & --- & Reserved \\ \cline{2-4}
+                & 0x20 & --- & Reserved \\ \cline{2-4}
+                & 0x40 & --- & Reserved \\ \cline{2-4}
+                & 0x80 & 0x21 & SD Card Inserted \\ \hline
+        \end{tabular}
+    \end{center}
+    \caption{F256 Interrupt Assignments}
+\end{table}
+
+\subsection*{sys\_int\_enable\_all -- 0x000404}
+This function enables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking.
+Returns a machine dependent representation of the CPU interrupt mask state that can be used to restore the state later.
+Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_int_enable_all()! \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Enable processing of IRQs
+short state = sys_int_enable_all();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Enable processing of IRQs
+jsr sys_int_enable_all
+\end{verbatim}
+
+\subsection*{sys\_int\_disable\_all -- 0x000408}
+This function disables all maskable interrupts at the CPU level. It returns a system-dependent code that represents the previous level of interrupt masking. 
+Returns a machine dependent representation of the CPU interrupt mask state that can be used to restore the state later.
+Note: this does not change the mask status of interrupts in the machine's interrupt controller, it just changes if the CPU ignores IRQs or not.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_int_disable_all()! \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Disable processing of IRQs
+short state = sys_int_disable_all();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Disable processing of IRQs
+jsr sys_int_disable_all
+\end{verbatim}
+
+
+\subsection*{sys\_int\_restore\_all -- 0x00040C}
+Restores 
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_restore_all(short state)! \\ \hline
+state & the machine dependent CPU interrupt state to restore
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Restore state of IRQ processing after enabling/disabling all
+short state = ...;
+
+sys_int_restore_all(state);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+; Restore state of IRQ processing after enabling/disabling all
+move.w state,d0
+jsr sys_int_restore_all
+\end{verbatim}
+
+\subsection*{sys\_int\_disable -- 0x000410}
+This function disables a particular interrupt at the level of the interrupt controller. The argument passed is the number of the interrupt to disable.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_disable(unsigned short n)! \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Disable the start-of-frame interrupt
+sys_int_disable(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #INT_SOF_A,d0        ; Enable the start-of-frame interrupt
+    jsr sys_int_disable
+\end{verbatim}
+
+\subsection*{sys\_int\_enable -- 0x000414}
+This function enables a particular interrupt at the level of the interrupt controller.
+The argument passed is the number of the interrupt to enable. Note that interrupts that are enabled at this level will still be disabled,
+if interrupts are disabled globally by \verb+sys_int_disable_all+.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_enable(unsigned short n)! \\ \hline
+n & the number of the interrupt \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Enable the start-of-frame interrupt
+sys_int_enable(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #INT_SOF_A,d0        ; Enable the start-of-frame interrupt
+    jsr sys_int_enable
+\end{verbatim}
+
+\subsection*{sys\_int\_register -- 0x000418}
+Registers a function as an interrupt handler. An interrupt handler is a function which takes and returns no arguments and will be
+run in at an elevated privilege level during the interrupt handling cycle.
+
+The first argument is the number of the interrupt to handle, the second argument is a pointer to the interrupt handler to register.
+Registering a null pointer as an interrupt handler will ``deregister'' the old handler.
+
+The function returns the handler that was previously registered.
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!p_int_handler sys_int_register(unsigned short n, p_int_handler handler)! \\ \hline
+n & the number of the interrupt \\ \hline
+handler & pointer to the interrupt handler to register \\ \hline
+Returns & the pointer to the previous interrupt handler \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Handler for the start-of-frame interrupt
+// Must be a far sub-routine (returns through RTL)
+__attribute__((far)) void sof_handler() {
+    // Interrupt handler code here...
+}
+
+// Register a handler for the start-of-frame interrupt
+p_int_handler old = sys_int_register(INT_SOF_A, sof_handler);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Code to register the handler...
+    move.l #sof_handler,-(a7)   ; push pointer to sof_handler
+    move.w #INT_SOF_A,d0        ; A = the number for the SOF_A interrupt
+    
+    jsr sys_int_register
+
+    addq.l #4,a7                ; Clean up the stack
+
+    move.l d0,old               ; Save the pointer to the old handler
+
+    ; ...
+
+; Handler for the start-of-frame interrupt
+sof_handler:
+    ; Handler code here...
+    rts
+\end{verbatim}
+
+\subsection*{sys\_int\_pending -- 0x00041C}
+Query an interrupt to see if it is pending in the interrupt controller.
+NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_int_pending(unsigned short n)! \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+Returns & non-zero if interrupt n is pending, 0 if not \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Check to see if start-of-frame interrupt is pending
+short is_pending = sys_int_pending(INT_SOF_A);
+if (is_pending) {
+    // The interrupt has not yet been acknowledged
+}
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Check to see if the start-of-frame interrupt is pending
+    move.w #INT_SOF_A,d0
+
+    jsr sys_int_pending
+    
+    cmp #0,d0
+    beq sof_not_pending
+
+    ; Code for when start-of-frame is pending
+
+sof_not_pending:
+\end{verbatim}
+
+\subsection*{sys\_int\_clear -- 0x000420}
+This function acknowledges the processing of an interrupt by clearing its pending flag in the interrupt controller.
+NOTE: User programs will probably never need to use this call, since it is handled by the Toolbox itself.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_int_clear(unsigned short n)! \\ \hline
+n & the number of the interrupt: n[7..4] = group number, n[3..0] = individual number. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+// Acknowledge the processing of the start-of-frame interrupt
+sys_int_clear(INT_SOF_A);
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Acknowledge the processing of the start-of-frame interrupt
+    move.w #INT_SOF_A,d0
+    jsr sys_int_clear
+\end{verbatim}
+
+\subsection*{sys\_kbd\_handle\_irq -- 0x000520}
+This function causes the keyboard processing code to try to process keystrokes.
+In the case of the mechanical keyboard on the F256k, it will scan the keyboard matrix and process any changes to the key positions.
+In the case of the optical keyboard on the F256k2, it will check the optical keyboard queue for any pending keystrokes.
+In the case of the PS/2 keyboard on the F256jr, it will check the PS/2 device for pending bytes.
+
+Internally, this function is called during the SOF interrupt on the F256k and F256k2 and is called in response to a PS/2 interrupt on the F256jr. The routine is exposed through the jumptable in case a program wants to take over the interrupt processing but still wants the Toolbox to interpret keystrokes. To get characters from the console device or to get keyboard scancodes, this function must be called periodically, as it is this function that interprets keypresses and queues up scancodes and console bytes.
+
+\bigskip
+
+\begin{table}[!h]\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!void sys_kbd_handle_irq()! \\ \hline
+Purpose & Handle an IRQ to query the keyboard \\ \hline
+\end{tabular}\end{table}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Look for and process pending keystrokes
+    sys_kbd_handle_irq();
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    ; Look for and process pending keystrokes
+    jsr sys_kbd_handle_irq
+\end{verbatim}

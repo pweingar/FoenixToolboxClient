@@ -1,0 +1,402 @@
+\section{Channel Functions}
+The channel functions provide support for channel or stream based I/O devices.
+Any time a device or program wants to work with data as a sequential stream of bytes or characters,
+that device should be a channel device.
+Examples of channel devices that the Toolbox supports are the console (screen and keyboard), the serial port,
+MIDI devices, and files open on SD cards.
+In the future, there may be other channel devices as well ({\it e.g.} network streams).
+Some channel devices can provide support for higher level functionality.
+As an example, the console channel device provides support for printing ANSI terminal codes to the screen
+and for reading certain key presses back as ANSI escape sequences (for instance, function key presses).
+
+\subsection*{sys\_chan\_read\_b -- 0x000428}
+Read a single character from the channel. Returns the character, or 0 if none are available.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_read_b(short channel)! \\ \hline
+channel & the number of the channel \\ \hline
+Returns & the value read (if negative, error) \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Read a byte from channel #0 (keyboard)
+    short b = sys_chan_read_b(0);
+    if (b >= 0) {
+        // We have valid data from 0-255 in b
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    clr.w d0               ; Select channel #0
+    jsr sys_chan_read_b    ; Read from the channel
+\end{verbatim}
+
+\subsection*{sys\_chan\_read -- 0x00042C}
+Read bytes from a channel and fill a buffer with them, given the number of the channel and the size of the buffer. Returns the number of bytes read.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_read(short channel, unsigned char * buffer, short size)! \\ \hline
+channel & the number of the channel \\ \hline
+buffer & the buffer into which to copy the channel data \\ \hline
+size & the size of the buffer. \\ \hline
+Returns & number of bytes read, any negative number is an error code \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    char buffer[80];
+    short n = sys_chan_read(0, buffer, 80);
+    if (n >= 0) {
+        // We correctly read n bytes into the buffer
+    } else {
+        // We have an error
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #80,-(a7)     ; Push the size of the buffer
+    move.l #buffer,-(a7) ; Push the address of the buffer
+    clr.w d0             ; Select channel #0
+    
+    jsr sys_chan_read    ; Try to read the bytes from the channel
+    
+    addq.l #6,a7         ; Clean up the stack
+    
+    btst #15,d0          ; If result is negative...
+    beq error            ; Go to process the error
+    
+    move.w d0,n          ; Otherwise: save the number of bytes read
+\end{verbatim}
+
+\subsection*{sys\_chan\_readline -- 0x000430}
+Read a line of text from a channel (terminated by a newline character or by the end of the buffer). Returns the number of bytes read.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_readline(short channel, unsigned char * buffer, short size)! \\ \hline
+channel & the number of the channel \\ \hline
+buffer & the buffer into which to copy the channel data \\ \hline
+size & the size of the buffer \\ \hline
+Returns & number of bytes read, any negative number is an error code \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short c = ...; // The channel number
+    unsigned char buffer[128];
+    short n = sys_chan_read_line(c, buffer, 128);    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #128,-(a7)       ; Push the size of the buffer
+    move.l #buffer,-(a7)    ; Push the pointer to the buffer
+    move.w c,d0             ; Set the channel number to read from
+
+    jsr sys_chan_read_line  ; Attempt to read a line from the console
+
+    addq.l #6,a7            ; Clean up the stack
+
+    move.w d0,n             ; Save the number of bytes read
+\end{verbatim}
+
+\subsection*{sys\_chan\_write\_b -- 0x000434}
+Write a single byte to the channel.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_write_b(short channel, uint8_t b)! \\ \hline
+channel & the number of the channel \\ \hline
+b & the byte to write \\ \hline
+Returns & 0 on success, a negative value on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Write `a' to the console
+    short result = sys_chan_write_b(0, 'a');
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w 'a',-(a7)        ; Push 'a' as the b parameter
+    clr.w d0                ; Select the console (channel #0)
+
+    jsr sys_chan_write_b    ; Write the character to the console
+
+    addq.l #2,a7            ; Clean up the stack
+\end{verbatim}
+
+\subsection*{sys\_chan\_write -- 0x000438}
+Write bytes from a buffer to a channel, given the number of the channel and the size of the buffer. Returns the number of bytes written.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_write(short channel, const uint8_t * buffer, short size)! \\ \hline
+channel & the number of the channel \\ \hline
+buffer &  \\ \hline
+size &  \\ \hline
+Returns & number of bytes written, any negative number is an error code \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    char * message = 'Hello, world!\n';
+    short n = sys_chan_write(0, message, strlen(message));
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #15,-(a7)      ; Push the size of the buffer
+    move.l #message,-(a7) ; Push the pointer to the message
+    move.w #0,d0          ; Select the console (channel #0)
+    
+    jsr sys_chan_write    ; Write the buffer to the console
+
+    addq.l #6,a7          ; Clean up the stack
+    
+    ; ...
+message:
+    db.c "Hello, world!", 13, 10, 0
+\end{verbatim}
+
+\subsection*{sys\_chan\_status -- 0x00043C}
+Gets the status of the channel. The meaning of the status bits is channel-specific, but four bits are recommended as standard:
+
+\begin{itemize}
+\item 0x01: The channel has reached the end of its data
+\item 0x02: The channel has encountered an error
+\item 0x04: The channel has data that can be read
+\item 0x08: The channel can accept data
+\end{itemize}
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_status(short channel)! \\ \hline
+channel & the number of the channel \\ \hline
+Returns & the status of the device \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Check the status of the file_in channel
+    short status = sys_chan_status(file_in);
+    if (status & 0x01) {
+        // We have reached end of file
+    }
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w file_in,d0
+
+    jsr sys_chan_status
+
+    andi.w $0001,d0
+    beq have_data
+
+    ; We have reached end of file
+\end{verbatim}
+
+\subsection*{sys\_chan\_flush -- 0x000440}
+Ensure any pending writes to a channel are completed.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_flush(short channel)! \\ \hline
+channel & the number of the channel \\ \hline
+Returns & 0 on success, any negative number is an error code \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short file_out = ...;        // Channel number
+    sys_chan_flush(file_out);    // Flush the channel
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w file_out,d0    ; Channel number
+    jsr sys_chan_flush    ; Flush the channel
+\end{verbatim}
+
+\subsection*{sys\_chan\_seek -- 0x000444}
+Set the position of the input/output cursor. This function may not be honored by a given channel as not all channels are ``seekable.''
+In addition to the usual channel parameter, the function takes two other parameters:
+\begin{itemize}
+\item position: the new position for the cursor
+\item base: whether the position is absolute (0), or relative to the current position (1).
+\end{itemize}
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_seek(short channel, long position, short base)! \\ \hline
+channel & the number of the channel \\ \hline
+position & the position of the cursor \\ \hline
+base & whether the position is absolute or relative to the current position \\ \hline
+Returns & 0 = success, a negative number is an error. \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short c = ...; // The channel number
+    sys_chan_seek(c, -10, 1); // Move the point back 10 bytes
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #1,-(a7)      ; Move is relative
+    move.w #-10,-(a7)    ; Move back by 10 bytes
+    move.w c,d0          ; Select the channel
+    
+    jsr sys_chan_seek    ; Move the channel cursor
+
+    addq.l #4,a7         ; Clean up the stack
+\end{verbatim}
+
+\subsection*{sys\_chan\_ioctrl -- 0x000448}
+Send a command to a channel.
+The mapping of commands and their actions are channel-specific.
+The return value is also channel and command-specific.
+The \verb+buffer+ and \verb+size+ parameters provide additional data to the commands,
+what exactly needs to go in them (if anything) is command-specific.
+Some commands require data in the buffer, and others do not.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_ioctrl(short channel, short command, uint8_t * buffer, short size)! \\ \hline
+channel & the number of the channel \\ \hline
+command & the number of the command to send \\ \hline
+buffer & pointer to bytes of additional data for the command \\ \hline
+size & the size of the buffer \\ \hline
+Returns & 0 on success, any negative number is an error code \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short c = ...;                   // The channel number
+    short cmd = ...;                 // The command
+    short r = sys_chan_ioctrl(c, cmd, 0, 0); // Send simple command
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #0,-(a7)        ; Push 0 for the size
+    move.l #0,-(a7)        ; Push the null pointer for the buffer
+    move.w cmd,-(a7)       ; Push the command
+    move.w c,d0            ; Select the channel
+
+    jsr sys_chan_ioctrl    ; Issue the command
+
+    add.l #8,a7           ; Clean up the stack
+
+c   dc.b 0
+cmd dc.w 0
+\end{verbatim}
+
+
+\subsection*{sys\_chan\_open -- 0x00044C}
+Open a channel device for reading or writing given: the number of the device, the path to the resource on the device (if any), and the access mode.
+The access mode is a bit field:
+\begin{itemize}
+    \item 0x01: Open for reading
+    \item 0x02: Open for writing
+    \item 0x03: Open for reading and writing
+\end{itemize}
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_open(short dev, const char * path, short mode)! \\ \hline
+dev & the device number to have a channel opened \\ \hline
+path & a "path" describing how the device is to be open \\ \hline
+mode & s the device to be read, written, both\\ \hline
+Returns & the number of the channel opened, negative number on error \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    // Serial port: 9600bps, 8-data bits, 1 stop bit, no parity
+    short chan = sys_chan_open(2, "9600,8,1,N", 3);    
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w #3,-(a7)      ; Mode: Read & Write
+    move.l #path,-(a7)   ; Pointer to the path
+    move.w #2,d0         ; Device #2 (UART)
+    
+    jsr sys_chan_open    ; Open the channel to the UART
+
+    addq.l #6,a7         ; Clean up the stack
+
+    ; ...
+
+path:
+    dc.b '9600,8,1,N',0
+\end{verbatim}
+
+
+\subsection*{sys\_chan\_close -- 0x000450}
+Close a channel that was previously open by \lstinline|sys_chan_open|.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_close(short chan)! \\ \hline
+chan & the number of the channel to close \\ \hline
+Returns & nothing useful \\ \hline
+\end{tabular}
+
+\subsubsection*{Example: C}
+\begin{lstlisting}
+    short c = ...;          // The channel number
+    sys_chan_close(c);      // Close the channel
+\end{lstlisting}
+
+\subsubsection*{Example: Assembler}
+\begin{verbatim}
+    move.w c,d0         ; Get the channel number
+	
+    jsr sys_chan_close  ; Close the channel
+\end{verbatim}
+
+\subsection*{sys\_chan\_swap -- 0x000454}
+Swaps two channels, given their IDs. If before the call, channel ID \verb+channel1+ refers to the file ``hello.txt'',
+and channel ID \verb+channel2+ is the console, then after the call, \verb+channel1+ is the console, and \verb+channel2+ is
+the open file ``hello.txt''. Any context for the channels is preserved (for instance, the position of the file cursor in an open file).
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_swap(short channel1, short channel2)! \\ \hline
+channel1 & the ID of one of the channels \\ \hline
+channel2 & the ID of the other channel \\ \hline
+Returns & 0 on success, any other number is an error \\ \hline
+\end{tabular}
+
+\subsection*{sys\_chan\_device -- 0x000458}
+Given a channel ID (the only parameter), return the ID of the device associated with the channel. The channel must be open.
+
+\bigskip
+
+\begin{tabular}{|l||l|} \hline
+Prototype & \lstinline!short sys_chan_device(short channel)! \\ \hline
+channel & the ID of the channel to query \\ \hline
+Returns & the ID of the device associated with the channel, negative number for error \\ \hline
+\end{tabular}
+

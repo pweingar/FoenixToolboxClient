@@ -1,0 +1,46 @@
+\chapter{FA2560K2 Toolbox Boot Process}
+
+\begin{tcolorbox}
+	{\bf NOTE:} The FA25650K2 boot process is still TBD. This documentation describes the boot process of the F256s, which should be broadly similar when all is said and done.
+\end{tcolorbox}
+
+The Toolbox does not really ``do'' anything once it has finished initializing the hardware. There is no CLI to use to enter commands, no GUI to use, not even a machine language monitor to fall into. To actually do something, the user needs to have executable code somewhere on one of the SD cards or in the cartridge. When the Toolbox finishes initializing the system, it will look in memory and in the SD cards for executable code. If it finds it, it will load and run the code. The exact process is fairly involved.
+
+To begin with, the Toolbox has the notion of a ``boot source,'' which is really just a storage device that can hold the executable code. There are several boot sources: the internal SD card, the external SD card, a flash cartridge inserted into the expansion port, the parts of flash memory the Toolbox does not occupy, and finally (under certain conditions) the system RAM. To include the system RAM as a boot source, DIP switch 1 must be in the ``ON'' position. The Toolbox will scan each of the boot sources in a priority order.
+
+\begin{enumerate}
+	\item If DIP switch 1 is ON, the system RAM is checked first.
+	\item If a flash cartridge is present, it is checked next.
+	\item If an SD card is present in the external slot, it is checked next.
+	\item The internal SD card is checked next.
+	\item Finally, the flash memory is checked.
+\end{enumerate}
+
+For the two SD cards, the Toolbox is looking for an executable file in the root directory of the card---either \verb+fnxboot.pgx+ or \verb+fnxboot.pgz+. For RAM, flash memory, and the expansion cartridge, the Toolbox is looking for a special header that contains a signature and specifies the starting address to run. In RAM, the entire memory from 0x00:0000 to the top of system RAM will be checked on 8KB alignment boundaries (that is, the header should be at 0x00:0000, or 0x00:2000, or 0x00:4000, {\it etc.}).\ For the cartridge, it should be at the start of the cartridge's memory (0xF4:0000). For the flash memory, it should be at the start of the flash memory (0xF8:0000)\footnote{This may change in future.}.
+
+The header for the executable code can be described with this C structure:
+\begin{lstlisting}
+	struct boot_record_s {
+		char signature1;				// Needs to be $f8
+		char signature2;				// Needs to be $16
+		uint8_t version;				// Currently $00
+		uint32_t start_address;			// Address to start executing (in little-endian format of the 65816)
+		uint32_t icon_address;			// Address of an icon to show (32x32 sprite data, use 0 for no icon)
+		uint32_t clut_address;			// Address of the palette for the icon in Vicky format (0 to use the default)
+		const char * name;				// A display name/command word for the program (not currently used)
+	}
+\end{lstlisting}
+
+\begin{itemize}
+	\item The header starts with the hexadecimal value 0xF816 in big-endian format (for Foenix 65816).
+	\item The third byte is the version number, which is currently 0.
+	\item The next four bytes are the address of the code to start executing (really a 24-bit pointer packed into 32-bits for convenience).
+	\item The next four bytes are a pointer to the raw Vicky sprite bitmap data for an icon to show in the boot screen.
+	      If no icon is needed, this should be 0.
+	\item The next four bytes are a pointer to the Vicky graphics CLUT data for the icon, to be copied into graphics CLUT 2.
+	      Again, if no CLUT needs to be provided, this should be 0. An icon may be provided without a CLUT, in which case the default
+		  graphics CLUT will be used.\footnote{The default CLUT is the ``Google'' color palette from the Aseprite package.}
+	\item The last four bytes are a pointer to a null-terminated ASCII string providing the name of this code. Currently, this is
+	      not being used, but it is intended to be the equivalent of a file name in terms of readability and possibly being used
+		  to select from multiple options, in later versions of the Toolbox.
+\end{itemize}
